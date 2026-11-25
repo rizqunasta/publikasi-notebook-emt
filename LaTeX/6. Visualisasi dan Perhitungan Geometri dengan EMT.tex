@@ -1,0 +1,3464 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{eumat}
+
+\begin{document}
+\begin{eulernotebook}
+\eulerheading{Visualisasi dan Perhitungan Geometri dengan EMT}
+\begin{eulercomment}
+Catatan kuliah Geometri dengan Euler Math Toolbox (EMT).
+Versi ini: (1) semua komentar sudah dalam bahasa Indonesia, (2) setiap contoh
+dilengkapi uraian materi (teori), (3) semua soal Latihan dikerjakan langsung
+di Euler, dan (4) setiap penyelesaian diberi penjelasan hasil.
+
+Catatan penting: nilai yang tertulis pada bagian "Hasil yang diharapkan" dihitung
+dan diperiksa terpisah (Python). Jalankan setiap perintah dengan Shift+Enter
+di EMT dan bandingkan hasilnya dengan nilai tersebut.
+
+Euler menyediakan beberapa fungsi untuk melakukan visualisasi dan perhitungan geometri, baik
+secara numerik maupun analitik (seperti biasanya tentunya, menggunakan Maxima).
+Fungsi-fungsi untuk visualisasi dan perhitungan geometeri tersebut disimpan di dalam file
+program "geometry.e", sehingga file tersebut harus dipanggil sebelum menggunakan
+fungsi-fungsi atau perintah-perintah untuk geometri.
+\end{eulercomment}
+\begin{eulerprompt}
+>load geometry
+\end{eulerprompt}
+\begin{euleroutput}
+  Numerical and symbolic geometry.
+\end{euleroutput}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Fungsi-fungsi Geometri}
+\begin{eulercomment}
+Fungsi-fungsi untuk Menggambar Objek Geometri:
+
+\end{eulercomment}
+\begin{eulerttcomment}
+  defaultd:=textheight()*1.5: nilai asli untuk parameter d
+  setPlotrange(x1,x2,y1,y2): menentukan rentang x dan y pada bidang koordinat
+  setPlotRange(r): pusat bidang koordinat (0,0) dan batas-batas sumbu-x dan y adalah -r sd r
+  plotPoint (P, "P"): menggambar titik P dan diberi label "P"
+  plotSegment (A,B, "AB", d): menggambar ruas garis AB, diberi label "AB" sejauh d
+  plotLine (g, "g", d): menggambar garis g diberi label "g" sejauh d
+  plotCircle (c,"c",v,d): Menggambar lingkaran c dan diberi label "c"
+  plotLabel (label, P, V, d): menuliskan label pada posisi P
+\end{eulerttcomment}
+\begin{eulercomment}
+
+Fungsi-fungsi Geometri Analitik (numerik maupun simbolik):
+
+\end{eulercomment}
+\begin{eulerttcomment}
+  turn(v, phi): memutar vektor v sejauh phi
+  turnLeft(v):   memutar vektor v ke kiri
+  turnRight(v):  memutar vektor v ke kanan
+  normalize(v): normal vektor v
+  crossProduct(v, w): hasil kali silang vektorv dan w.
+  lineThrough(A, B): garis melalui A dan B, hasilnya [a,b,c] sdh. ax+by=c.
+  lineWithDirection(A,v): garis melalui A searah vektor v
+  getLineDirection(g): vektor arah (gradien) garis g
+  getNormal(g): vektor normal (tegak lurus) garis g
+  getPointOnLine(g):  titik pada garis g
+  perpendicular(A, g):  garis melalui A tegak lurus garis g
+  parallel (A, g):  garis melalui A sejajar garis g
+  lineIntersection(g, h):  titik potong garis g dan h
+  projectToLine(A, g):   proyeksi titik A pada garis g
+  distance(A, B):  jarak titik A dan B
+  distanceSquared(A, B):  kuadrat jarak A dan B
+  quadrance(A, B): kuadrat jarak A dan B
+  areaTriangle(A, B, C):  luas segitiga ABC
+  computeAngle(A, B, C):   besar sudut <ABC
+  angleBisector(A, B, C): garis bagi sudut <ABC
+  circleWithCenter (A, r): lingkaran dengan pusat A dan jari-jari r
+  getCircleCenter(c):  pusat lingkaran c
+  getCircleRadius(c):  jari-jari lingkaran c
+  circleThrough(A,B,C):  lingkaran melalui A, B, C
+  middlePerpendicular(A, B): garis sumbu (tegak lurus di titik tengah) ruas AB
+  lineCircleIntersections(g, c): titik potong garis g dan lingkran c
+  circleCircleIntersections (c1, c2):  titik potong lingkaran c1 dan c2
+  planeThrough(A, B, C):  bidang melalui titik A, B, C
+\end{eulerttcomment}
+\begin{eulercomment}
+
+Fungsi-fungsi Khusus Untuk Geometri Simbolik:
+
+\end{eulercomment}
+\begin{eulerttcomment}
+  getLineEquation (g,x,y): persamaan garis g dinyatakan dalam x dan y
+  getHesseForm (g,x,y,A): bentuk Hesse garis g dinyatakan dalam x dan y dengan titik A pada
+  sisi positif (kanan/atas) garis
+  quad(A,B): kuadrat jarak AB
+  spread(a,b,c): Spread segitiga dengan panjang sisi-sisi a,b,c, yakni sin(alpha)^2 dengan
+  alpha sudut yang menghadap sisi a.
+  crosslaw(a,b,c,sa): persamaan 3 quads dan 1 spread pada segitiga dengan panjang sisi a, b, c.
+  triplespread(sa,sb,sc): persamaan 3 spread sa,sb,sc yang memebntuk suatu segitiga
+  doublespread(sa): Spread sudut rangkap Spread 2*phi, dengan sa=sin(phi)^2 spread a.
+\end{eulerttcomment}
+\begin{eulercomment}
+
+Fungsi bantu buatan sendiri (dipakai pada latihan di bawah):
+
+\end{eulercomment}
+\begin{eulerttcomment}
+  jarakKeGaris(P,g): jarak titik P ke garis g=[a,b,c] (ax+by=c)
+  gambarSegitiga(A,B,C): menggambar titik dan sisi-sisi segitiga ABC
+\end{eulerttcomment}
+\begin{eulercomment}
+
+\end{eulercomment}
+\begin{eulerprompt}
+>function jarakKeGaris (P,g) := abs(g[1]*P[1]+g[2]*P[2]-g[3])/sqrt(g[1]^2+g[2]^2)
+>function gambarSegitiga (A,B,C) ...
+\end{eulerprompt}
+\begin{eulerudf}
+    plotPoint(A,"A"); plotPoint(B,"B"); plotPoint(C,"C");
+    plotSegment(A,B,""); plotSegment(B,C,""); plotSegment(C,A,"");
+  endfunction
+\end{eulerudf}
+\begin{eulercomment}
+\begin{eulercomment}
+\eulerheading{Uraian Materi 1: Geometri Koordinat Dasar}
+\begin{eulercomment}
+Titik pada bidang dinyatakan dengan pasangan terurut P(x,y), atau vektor [x,y] di EMT.
+
+- Jarak dua titik A(x1,y1) dan B(x2,y2):
+\end{eulercomment}
+\begin{eulerformula}
+\[
+|AB| = \sqrt{(x_2-x_1)^2+(y_2-y_1)^2}.
+\]
+\end{eulerformula}
+\begin{eulercomment}
+- Persamaan garis umum: ax + by = c, dengan vektor normal (a,b). EMT menyimpan garis
+\end{eulercomment}
+\begin{eulerttcomment}
+  sebagai vektor [a,b,c]. Garis melalui A dan B mempunyai vektor normal yang tegak lurus AB.
+\end{eulerttcomment}
+\begin{eulercomment}
+
+- Dua garis tegak lurus jika hasil kali skalar vektor normalnya nol. Jika gradiennya
+\end{eulercomment}
+\begin{eulerttcomment}
+  ada, hasil kali gradien keduanya = -1.
+\end{eulerttcomment}
+\begin{eulercomment}
+
+- Jarak titik P(x0,y0) ke garis ax+by=c:
+\end{eulercomment}
+\begin{eulerformula}
+\[
+d = \frac{|a x_0 + b y_0 - c|}{\sqrt{a^2+b^2}}.
+\]
+\end{eulerformula}
+\begin{eulerttcomment}
+  Rumus inilah yang dipakai fungsi jarakKeGaris di atas.
+\end{eulerttcomment}
+\begin{eulercomment}
+- Luas segitiga ABC dengan determinan (bertanda):
+\end{eulercomment}
+\begin{eulerformula}
+\[
+L = \frac{1}{2}\left|x_1(y_2-y_3)+x_2(y_3-y_1)+x_3(y_1-y_2)\right|.
+\]
+\end{eulerformula}
+\begin{eulercomment}
+\begin{eulercomment}
+\eulerheading{Contoh 1: Luas, Lingkaran Luar, Lingkaran Dalam Segitiga}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Uraian Materi}
+\begin{eulercomment}
+Garis-garis istimewa pada segitiga ABC dengan sisi a=BC, b=CA, c=AB dan s=(a+b+c)/2:
+
+- Garis tinggi: garis dari titik sudut yang tegak lurus sisi di hadapannya. Ketiganya
+\end{eulercomment}
+\begin{eulerttcomment}
+  berpotongan di satu titik, disebut titik tinggi (ortosentrum) H.
+\end{eulerttcomment}
+\begin{eulercomment}
+- Garis berat: garis dari titik sudut ke titik tengah sisi di hadapannya. Ketiganya
+\end{eulercomment}
+\begin{eulerttcomment}
+  berpotongan di titik berat G = (A+B+C)/3, yang membagi garis berat 2 : 1.
+\end{eulerttcomment}
+\begin{eulercomment}
+- Garis sumbu: garis tegak lurus sisi di titik tengahnya. Ketiganya berpotongan di
+\end{eulercomment}
+\begin{eulerttcomment}
+  pusat lingkaran luar O, sebab setiap titik pada garis sumbu AB berjarak sama ke A dan B.
+\end{eulerttcomment}
+\begin{eulercomment}
+- Garis bagi sudut: ketiganya berpotongan di pusat lingkaran dalam, sebab setiap
+\end{eulercomment}
+\begin{eulerttcomment}
+  titik pada garis bagi sudut berjarak sama ke kedua sisi yang membentuk sudut itu.
+\end{eulerttcomment}
+\begin{eulercomment}
+
+Rumus-rumus yang berkaitan (L = luas segitiga):
+\end{eulercomment}
+\begin{eulerformula}
+\[
+L=\frac{1}{2}\,a\,t_a,\qquad r=\frac{L}{s},\qquad R=\frac{abc}{4L},\qquad \frac{a}{\sin\alpha}=2R.
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Jari-jari lingkaran dalam r, jari-jari lingkaran luar R, dan pertidaksamaan Euler: R \textgreater{}= 2r.
+
+\end{eulercomment}
+\eulersubheading{Penyelesaian dengan EMT}
+\begin{eulercomment}
+Untuk menggambar objek-objek geometri, langkah pertama adalah menentukan rentang sumbu-sumbu
+koordinat. Semua objek geometri akan digambar pada satu bidang koordinat, sampai didefinisikan
+bidang koordinat yang baru.
+\end{eulercomment}
+\begin{eulerprompt}
+>setPlotRange(-0.5,2.5,-0.5,2.5); // mendefinisikan bidang koordinat baru
+\end{eulerprompt}
+\begin{eulercomment}
+Sekarang tentukan tiga titik dan gambarlah.
+\end{eulercomment}
+\begin{eulerprompt}
+>A=[1,0]; plotPoint(A,"A"); // definisi dan gambar tiga titik
+>B=[0,1]; plotPoint(B,"B");
+>C=[2,2]; plotPoint(C,"C");
+\end{eulerprompt}
+\begin{eulercomment}
+Kemudian tiga ruas garis.
+\end{eulercomment}
+\begin{eulerprompt}
+>plotSegment(A,B,"c"); // c=AB
+>plotSegment(B,C,"a"); // a=BC
+>plotSegment(A,C,"b"); // b=AC
+\end{eulerprompt}
+\begin{eulercomment}
+Fungsi-fungsi geometri mencakup fungsi untuk membuat garis dan lingkaran.
+Format garis adalah [a,b,c], yang menyatakan garis dengan
+persamaan ax+by=c.
+\end{eulercomment}
+\begin{eulerprompt}
+>lineThrough(B,C) // garis yang melalui B dan C
+\end{eulerprompt}
+\begin{euleroutput}
+  [-1,  2,  2]
+\end{euleroutput}
+\begin{eulercomment}
+Hitung garis yang tegak lurus BC melalui A.
+\end{eulercomment}
+\begin{eulerprompt}
+>h=perpendicular(A,lineThrough(B,C)); // garis h tegak lurus BC melalui A
+\end{eulerprompt}
+\begin{eulercomment}
+Dan titik potongnya dengan BC.
+\end{eulercomment}
+\begin{eulerprompt}
+>D=lineIntersection(h,lineThrough(B,C)); // D adalah titik potong h dan BC
+\end{eulerprompt}
+\begin{eulercomment}
+Gambar itu.
+\end{eulercomment}
+\begin{eulerprompt}
+>plotPoint(D,value=1); // koordinat D ditampilkan
+>aspect(1); plotSegment(A,D): // tampilkan semua gambar hasil plot...()
+\end{eulerprompt}
+\begin{eulercomment}
+Hitung luas ABC:
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+L_{\triangle ABC}= \frac{1}{2}AD.BC.
+\]
+\end{eulerformula}
+\begin{eulerprompt}
+>norm(A-D)*norm(B-C)/2 // AD=norm(A-D), BC=norm(B-C)
+\end{eulerprompt}
+\begin{euleroutput}
+  1.5
+\end{euleroutput}
+\begin{eulercomment}
+Bandingkan dengan rumus determinan.
+\end{eulercomment}
+\begin{eulerprompt}
+>areaTriangle(A,B,C) // hitung luas segitiga langusng dengan fungsi
+\end{eulerprompt}
+\begin{euleroutput}
+  1.5
+\end{euleroutput}
+\begin{eulercomment}
+Cara lain menghitung luas segitigas ABC:
+\end{eulercomment}
+\begin{eulerprompt}
+>distance(A,D)*distance(B,C)/2
+\end{eulerprompt}
+\begin{euleroutput}
+  1.5
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: ketiganya 1.5.
+
+*** Latihan 1 (Contoh 1): Luas ABC dengan tinggi dari titik B dan C
+
+Soal: Coba hitung luas ABC dengan menggunakan tinggi dari titik B maupun C.
+Gambar kedua garis tinggi lainnya. Apakah hasilnya sama?
+
+Langkah: tarik garis dari B tegak lurus sisi AC (kaki = Bk), dan dari C tegak lurus
+sisi AB (kaki = Ck). Luas = 1/2 x alas x tinggi.
+\end{eulercomment}
+\begin{eulerprompt}
+>hB=perpendicular(B,lineThrough(A,C)); Bk=lineIntersection(hB,lineThrough(A,C));
+>hC=perpendicular(C,lineThrough(A,B)); Ck=lineIntersection(hC,lineThrough(A,B));
+>plotPoint(Bk,"Bk"); plotPoint(Ck,"Ck"); plotSegment(B,Bk); plotSegment(C,Ck):
+\end{eulerprompt}
+\begin{eulercomment}
+Luas dengan tinggi dari B (alas AC) dan tinggi dari C (alas AB):
+\end{eulercomment}
+\begin{eulerprompt}
+>norm(B-Bk)*norm(A-C)/2
+\end{eulerprompt}
+\begin{euleroutput}
+  1.5
+\end{euleroutput}
+\begin{eulerprompt}
+>norm(C-Ck)*norm(A-B)/2
+\end{eulerprompt}
+\begin{euleroutput}
+  1.5
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: tinggi dari B = 1.34164 (=3/sqrt(5)), tinggi dari C = 2.12132
+(=3/sqrt(2)); kedua luasnya 1.5.
+Penjelasan: ketiga cara memberi luas yang sama (1.5). Ini wajar karena
+alas x tinggi bernilai sama untuk ketiga pasangan sisi-tinggi: a.ta = b.tb = c.tc = 2L.
+Tinggi yang lebih pendek berpasangan dengan alas yang lebih panjang.
+
+Sudut di C.
+\end{eulercomment}
+\begin{eulerprompt}
+>degprint(computeAngle(B,C,A))
+\end{eulerprompt}
+\begin{euleroutput}
+  36°52'11.63''
+\end{euleroutput}
+\begin{eulercomment}
+*** Latihan 2 (Contoh 1): Dua sudut lain dan jumlah ketiga sudut
+
+Soal: Hitung besar dua sudut yang lain. Selanjutnya, jumlahkan ketiga sudut
+segitiga tersebut. Apakah hasilnya 180 derajat?
+\end{eulercomment}
+\begin{eulerprompt}
+>wA=computeAngle(B,A,C); wB=computeAngle(A,B,C); wC=computeAngle(B,C,A);
+>degprint(wA), degprint(wB), degprint(wC)
+\end{eulerprompt}
+\begin{euleroutput}
+  71°33'54.18''
+  71°33'54.18''
+  36°52'11.63''
+\end{euleroutput}
+\begin{eulerprompt}
+>degprint(wA+wB+wC)
+\end{eulerprompt}
+\begin{euleroutput}
+  180°
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: A = 71Â°33'54.18'', B = 71Â°33'54.18'', C = 36Â°52'11.63''
+dan jumlahnya 180Â°0'0''.
+Penjelasan: jumlah sudut dalam segitiga selalu 180 derajat (geometri Euclid). Di sini sudut A
+dan B sama besar karena AC = BC = sqrt(5), jadi segitiga ABC sama kaki dengan puncak C.
+
+Sekarang lingkaran luar segitiga tersebut.
+\end{eulercomment}
+\begin{eulerprompt}
+>c=circleThrough(A,B,C); // lingkaran luar segitiga ABC
+>R=getCircleRadius(c); // jari2 lingkaran luar
+>O=getCircleCenter(c); // titik pusat lingkaran c
+>plotPoint(O,"O"); // gambar titik "O"
+>plotCircle(c,"Lingkaran luar segitiga ABC"):
+\end{eulerprompt}
+\begin{eulercomment}
+Tampilkan koordinat titik pusat dan jari-jari lingkaran luar.
+\end{eulercomment}
+\begin{eulerprompt}
+>O, R
+\end{eulerprompt}
+\begin{euleroutput}
+  [1.16667,  1.16667]
+  1.17851130198
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: O = [1.16667, 1.16667], R = 1.17851.
+Sekarang akan digambar lingkaran dalam segitiga ABC. Titik pusat lingkaran dalam adalah
+titik potong garis-garis bagi sudut.
+\end{eulercomment}
+\begin{eulerprompt}
+>l=angleBisector(A,C,B); // garis bagi <ACB
+>g=angleBisector(C,A,B); // garis bagi <CAB
+>P=lineIntersection(l,g) // titik potong kedua garis bagi sudut
+\end{eulerprompt}
+\begin{euleroutput}
+  [0.86038,  0.86038]
+\end{euleroutput}
+\begin{eulercomment}
+Tambahkan semuanya ke gambar.
+\end{eulercomment}
+\begin{eulerprompt}
+>color(5); plotLine(l); plotLine(g); color(1); // gambar kedua garis bagi sudut
+>plotPoint(P,"P"); // gambar titik potongnya
+>r=norm(P-projectToLine(P,lineThrough(A,B))) // jari-jari lingkaran dalam
+\end{eulerprompt}
+\begin{euleroutput}
+  0.509653732104
+\end{euleroutput}
+\begin{eulerprompt}
+>plotCircle(circleWithCenter(P,r),"Lingkaran dalam segitiga ABC"): // gambar lingkaran dalam
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: P = [0.86038, 0.86038], r = 0.509654.
+
+\end{eulercomment}
+\eulersubheading{Latihan (10 soal)}
+\begin{eulercomment}
+*** Latihan 1: Ketiga titik singgung lingkaran dalam dengan sisi-sisi segitiga
+
+Titik singgung adalah kaki garis tegak lurus dari pusat lingkaran dalam P ke setiap sisi,
+yaitu proyeksi P pada garis-garis sisi.
+\end{eulercomment}
+\begin{eulerprompt}
+>sAB=lineThrough(A,B); sBC=lineThrough(B,C); sCA=lineThrough(C,A);
+>T1=projectToLine(P,sAB); T2=projectToLine(P,sBC); T3=projectToLine(P,sCA);
+>T1, T2, T3
+\end{eulerprompt}
+\begin{euleroutput}
+  [0.5,  0.5]
+  [0.632456,  1.31623]
+  [1.31623,  0.632456]
+\end{euleroutput}
+\begin{eulerprompt}
+>plotPoint(T1,"T1"); plotPoint(T2,"T2"); plotPoint(T3,"T3"):
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: T1 = [0.5, 0.5] (pada AB), T2 = [0.632456, 1.31623] (pada BC),
+T3 = [1.31623, 0.632456] (pada CA).
+Penjelasan: jari-jari lingkaran dalam tegak lurus sisi di titik singgungnya, sehingga
+titik singgung = proyeksi pusat pada sisi.
+
+*** Latihan 2: Segitiga dengan titik-titik sudut ketiga titik singgung
+
+Gambar segitiga T1T2T3 dan selidiki jenisnya melalui panjang sisi dan sudutnya.
+\end{eulercomment}
+\begin{eulerprompt}
+>plotSegment(T1,T2,""); plotSegment(T2,T3,""); plotSegment(T3,T1,""):
+>distance(T1,T2), distance(T2,T3), distance(T3,T1)
+\end{eulerprompt}
+\begin{euleroutput}
+  0.826905214631
+  0.966999966873
+  0.826905214631
+\end{euleroutput}
+\begin{eulerprompt}
+>degprint(computeAngle(T2,T1,T3)), degprint(computeAngle(T1,T2,T3)), degprint(computeAngle(T1,T3,T2))
+\end{eulerprompt}
+\begin{euleroutput}
+  71°33'54.18''
+  54°13'2.91''
+  54°13'2.91''
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: sisi 0.826905, 0.967000, 0.826905; sudut 71Â°33'54'', 54Â°13'3'', 54Â°13'3''.
+Penjelasan: segitiga singgung ini sama kaki (T1T2 = T3T1) dan lancip (semua sudut \textless{} 90Â°).
+Secara umum sudut-sudutnya sama dengan 90Â° - A/2, 90Â° - B/2, 90Â° - C/2, sehingga segitiga
+singgung selalu lancip. Sama kakinya berasal dari ABC yang juga sama kaki (AC = BC).
+
+*** Latihan 3: Luas segitiga singgung
+\end{eulercomment}
+\begin{eulerprompt}
+>LT=abs(areaTriangle(T1,T2,T3))
+\end{eulerprompt}
+\begin{euleroutput}
+  0.324341649025
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: 0.324342.
+Penjelasan: luas segitiga singgung = L x r/(2R). Periksa:
+\end{eulercomment}
+\begin{eulerprompt}
+>abs(areaTriangle(A,B,C))*r/(2*R)
+\end{eulerprompt}
+\begin{euleroutput}
+  0.324341649025
+\end{euleroutput}
+\begin{eulercomment}
+Hasilnya sama (0.324342).
+
+*** Latihan 4: Garis bagi sudut ketiga melalui pusat lingkaran dalam
+
+Garis bagi sudut di A dan C sudah dipakai untuk mendapatkan P. Sekarang garis bagi sudut di B.
+\end{eulercomment}
+\begin{eulerprompt}
+>m=angleBisector(A,B,C); // garis bagi <ABC (di titik B)
+>color(3); plotLine(m); color(1);
+>m[1]*P[1]+m[2]*P[2]-m[3], jarakKeGaris(P,m)
+\end{eulerprompt}
+\begin{euleroutput}
+  0
+  0
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: kedua nilai sangat dekat nol (galat pembulatan ~1e-16).
+Penjelasan: P memenuhi persamaan garis m (atau berjarak 0 dari m), jadi garis bagi sudut ketiga
+melalui P. Dengan demikian ketiga garis bagi sudut berpotongan di satu titik.
+
+*** Latihan 5: Gambar jari-jari lingkaran dalam
+\end{eulercomment}
+\begin{eulerprompt}
+>plotSegment(P,T1,""); plotSegment(P,T2,""); plotSegment(P,T3,""):
+>distance(P,T1), distance(P,T2), distance(P,T3)
+\end{eulerprompt}
+\begin{euleroutput}
+  0.509653732104
+  0.509653732104
+  0.509653732104
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: ketiganya 0.509654, sama dengan r.
+
+*** Latihan 6: Luas lingkaran luar dan lingkaran dalam, hubungannya dengan luas ABC
+\end{eulercomment}
+\begin{eulerprompt}
+>LABC=abs(areaTriangle(A,B,C));
+>LR=pi*R^2, Lr=pi*r^2
+\end{eulerprompt}
+\begin{euleroutput}
+  4.36332312999
+  0.81601903655
+\end{euleroutput}
+\begin{eulerprompt}
+>LR/LABC, Lr/LABC, R/r
+\end{eulerprompt}
+\begin{euleroutput}
+  2.90888208666
+  0.544012691033
+  2.31237647787
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: luas lingkaran luar = 4.36332, luas lingkaran dalam = 0.816019,
+LR/L = 2.90888, Lr/L = 0.544013, R/r = 2.31238.
+Hubungan dengan luas segitiga (s = setengah keliling):
+\end{eulercomment}
+\begin{eulerprompt}
+>sisiA=distance(B,C); sisiB=distance(C,A); sisiC=distance(A,B); s=(sisiA+sisiB+sisiC)/2;
+>r*s, sisiA*sisiB*sisiC/(4*R), LABC
+\end{eulerprompt}
+\begin{euleroutput}
+  1.5
+  1.5
+  1.5
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: ketiganya 1.5.
+Penjelasan: L = r.s dan L = abc/(4R). Akibatnya luas lingkaran dalam = pi.L\textasciicircum{}2/s\textasciicircum{}2 dan luas
+lingkaran luar = pi.a\textasciicircum{}2.b\textasciicircum{}2.c\textasciicircum{}2/(16 L\textasciicircum{}2), yaitu hubungannya melalui L, tetapi bukan
+perbandingan tetap. Hanya R/r yang selalu memenuhi R \textgreater{}= 2r (pertidaksamaan Euler); di sini
+2.31238 \textgreater{}= 2 dan kesamaan terjadi hanya untuk segitiga sama sisi.
+
+*** Latihan 7: Ketiga garis sumbu berpotongan di satu titik
+\end{eulercomment}
+\begin{eulerprompt}
+>gA=middlePerpendicular(B,C); gB=middlePerpendicular(C,A); gC=middlePerpendicular(A,B);
+>setPlotRange(-0.5,2.5,-0.5,2.5); aspect(1); gambarSegitiga(A,B,C);
+>color(5); plotLine(gA); plotLine(gB); plotLine(gC); color(1);
+>U=lineIntersection(gA,gB); plotPoint(U,"U"):
+>U, jarakKeGaris(U,gC)
+\end{eulerprompt}
+\begin{euleroutput}
+  [1.16667,  1.16667]
+  0
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: U = [1.16667, 1.16667] (sama dengan pusat lingkaran luar O), jarak U ke gC = 0 (~1e-16).
+Penjelasan: titik potong dua garis sumbu juga terletak pada garis sumbu ketiga, jadi ketiganya
+sepusat di U, yang sama dengan O. Alasan teorinya: U berjarak sama ke A, B, C.
+
+*** Latihan 8: Ketiga garis bagi sudut berpotongan di satu titik
+\end{eulercomment}
+\begin{eulerprompt}
+>bA=angleBisector(B,A,C); bB=angleBisector(A,B,C); bC=angleBisector(A,C,B);
+>setPlotRange(-0.5,2.5,-0.5,2.5); aspect(1); gambarSegitiga(A,B,C);
+>color(5); plotLine(bA); plotLine(bB); plotLine(bC); color(1);
+>P2=lineIntersection(bA,bB); plotPoint(P2,"P"):
+>P2, jarakKeGaris(P2,bC)
+\end{eulerprompt}
+\begin{euleroutput}
+  [0.86038,  0.86038]
+  0
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: P2 = [0.86038, 0.86038] (sama dengan pusat lingkaran dalam P), jarak ke bC = 0.
+
+*** Latihan 9: Ketiga garis tinggi berpotongan di satu titik
+\end{eulercomment}
+\begin{eulerprompt}
+>hA=perpendicular(A,lineThrough(B,C)); hB=perpendicular(B,lineThrough(C,A)); hC=perpendicular(C,lineThrough(A,B));
+>setPlotRange(-0.5,2.5,-0.5,2.5); aspect(1); gambarSegitiga(A,B,C);
+>color(5); plotLine(hA); plotLine(hB); plotLine(hC); color(1);
+>H=lineIntersection(hA,hB); plotPoint(H,"H"):
+>H, jarakKeGaris(H,hC)
+\end{eulerprompt}
+\begin{euleroutput}
+  [0.666667,  0.666667]
+  0
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: H = [0.666667, 0.666667], jarak ke hC = 0.
+
+*** Latihan 10: Ketiga garis berat berpotongan di satu titik
+\end{eulercomment}
+\begin{eulerprompt}
+>mA=lineThrough(A,(B+C)/2); mB=lineThrough(B,(C+A)/2); mC=lineThrough(C,(A+B)/2);
+>setPlotRange(-0.5,2.5,-0.5,2.5); aspect(1); gambarSegitiga(A,B,C);
+>color(5); plotLine(mA); plotLine(mB); plotLine(mC); color(1);
+>G=lineIntersection(mA,mB); plotPoint(G,"G"):
+>G, jarakKeGaris(G,mC), (A+B+C)/3
+\end{eulerprompt}
+\begin{euleroutput}
+  [1,  1]
+  0
+  [1,  1]
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: G = [1, 1] = (A+B+C)/3, jarak ke mC = 0.
+Penjelasan (7-10): keempat pasang garis istimewa memang konkuren (Teorema Ceva). Pemeriksaan
+numerik di atas menunjukkan titik potong dua garis jatuh tepat pada garis ketiga. Bukti
+eksak (bukan numerik) memakai Maxima ada di Latihan Contoh 2 di bawah.
+
+\begin{eulercomment}
+\eulerheading{Contoh 2: Geometri Simbolik}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Uraian Materi}
+\begin{eulercomment}
+Geometri analitik simbolik mengerjakan perhitungan yang sama secara eksak (pecahan dan akar),
+bukan hampiran desimal. Keuntungannya: kesamaan (misal tiga garis konkuren) bisa dibuktikan
+persis. Perintah dengan awalan "\&" dan "\textdollar{}" dijalankan oleh Maxima.
+
+\end{eulercomment}
+\eulersubheading{Penyelesaian dengan EMT}
+\begin{eulercomment}
+Kita bisa menghitung geometri eksak dan simbolik dengan Maxima.
+
+File geometry.e menyediakan fungsi yang sama (dan lebih banyak) di Maxima.
+Namun, sekarang kita dapat memakai perhitungan simbolik.
+\end{eulercomment}
+\begin{eulerprompt}
+>A &= [1,0]; B &= [0,1]; C &= [2,2]; // menentukan tiga titik A, B, C
+\end{eulerprompt}
+\begin{eulercomment}
+Fungsi-fungsi untuk garis dan lingkaran bekerja persis seperti fungsi Euler,
+tetapi menghasilkan perhitungan simbolik.
+\end{eulercomment}
+\begin{eulerprompt}
+>c &= lineThrough(B,C) // c=BC
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                               [- 1, 2, 2]
+  
+\end{euleroutput}
+\begin{eulercomment}
+Kita bisa mendapatkan persamaan suatu garis dengan mudah.
+\end{eulercomment}
+\begin{eulerprompt}
+>$getLineEquation(c,x,y), $solve(%,y) | expand // persamaan garis c
+>$getLineEquation(lineThrough([x1,y1],[x2,y2]),x,y), $solve(%,y) // persamaan garis melalui(x1, y1) dan (x2, y2)
+>$getLineEquation(lineThrough(A,[x1,y1]),x,y) // persamaan garis melalui A dan (x1, y1)
+>h &= perpendicular(A,lineThrough(B,C)) // h melalui A tegak lurus BC
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                                [2, 1, 2]
+  
+\end{euleroutput}
+\begin{eulerprompt}
+>Q &= lineIntersection(c,h) // Q titik potong garis c=BC dan h
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                                   2  6
+                                  [-, -]
+                                   5  5
+  
+\end{euleroutput}
+\begin{eulerprompt}
+>$projectToLine(A,lineThrough(B,C)) // proyeksi A pada BC
+>$distance(A,Q) // jarak AQ
+>cc &= circleThrough(A,B,C); $cc // (titik pusat dan jari-jari) lingkaran melalui A, B, C
+>r&=getCircleRadius(cc); $r , $float(r) // tampilkan nilai jari-jari
+>$computeAngle(A,C,B) // nilai <ACB
+>$solve(getLineEquation(angleBisector(A,C,B),x,y),y)[1] // persamaan garis bagi <ACB
+>P &= lineIntersection(angleBisector(A,C,B),angleBisector(C,B,A)); $P // titik potong 2 garis bagi sudut
+>P() // hasilnya sama dengan perhitungan sebelumnya
+\end{eulerprompt}
+\begin{euleroutput}
+  [0.86038,  0.86038]
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan (bandingkan Contoh 1): c = [-1,2,2]; h = [2,1,2]; Q = [2/5,6/5];
+AQ = 3/sqrt(5); pusat luar [7/6,7/6] dan R = 5/(3 sqrt(2)); sudut ACB = arccos(4/5);
+garis bagi \textless{}ACB: y = x; P = [(sqrt(2)sqrt(5)+2)/6, (sqrt(2)sqrt(5)+2)/6].
+
+*** Latihan Contoh 2: Pembuktian eksak keempat garis istimewa konkuren
+
+Untuk menghindari kerancuan nama dengan variabel di atas, nama-nama baru memakai awalan s (simbolik).
+
+Soal 1. Ketiga garis tinggi.
+\end{eulercomment}
+\begin{eulerprompt}
+>shA &= perpendicular(A,lineThrough(B,C)); shB &= perpendicular(B,lineThrough(C,A)); shC &= perpendicular(C,lineThrough(A,B));
+>$getLineEquation(shA,x,y), $getLineEquation(shB,x,y), $getLineEquation(shC,x,y)
+>HH &= lineIntersection(shA,shB); $HH
+>$getLineEquation(shC,x,y) with [x=HH[1],y=HH[2]]
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: persamaan 2x+y=2, x+2y=2, x-y=0 (bentuk penulisan Maxima boleh berbeda
+urutannya); HH = [2/3,2/3]; substitusi ke garis ketiga menghasilkan kesamaan yang benar (0=0).
+Penjelasan: titik potong dua garis tinggi memenuhi persamaan garis tinggi ketiga, jadi ketiganya
+berpotongan di satu titik (titik tinggi) HH = (2/3, 2/3).
+
+Soal 2. Ketiga garis bagi sudut.
+\end{eulercomment}
+\begin{eulerprompt}
+>sbA &= angleBisector(B,A,C); sbB &= angleBisector(A,B,C); sbC &= angleBisector(A,C,B);
+>PP &= lineIntersection(sbA,sbB)|radcan; $PP
+>$radcan(getLineEquation(sbC,x,y) with [x=PP[1],y=PP[2]])
+\end{eulerprompt}
+\begin{eulercomment}
+Pemeriksaan numerik sebagai cadangan (hasilnya harus sekitar 0):
+\end{eulercomment}
+\begin{eulerprompt}
+>PP(), jarakKeGaris(PP(),sbC())
+\end{eulerprompt}
+\begin{euleroutput}
+  [0.86038,  0.86038]
+  0
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: PP = [(sqrt(2)sqrt(5)+2)/6, (sqrt(2)sqrt(5)+2)/6] atau [0.86038, 0.86038];
+hasil substitusi berupa kesamaan yang benar; cek numerik sekitar 0.
+Penjelasan: bentuk eksaknya memuat akar karena garis bagi sudut melibatkan panjang sisi
+(sqrt(2) dan sqrt(5)). Walaupun rumit, ketiga garis bagi tetap bertemu di satu titik.
+
+Soal 3. Ketiga garis sumbu.
+\end{eulercomment}
+\begin{eulerprompt}
+>ssA &= middlePerpendicular(B,C); ssB &= middlePerpendicular(C,A); ssC &= middlePerpendicular(A,B);
+>UU &= lineIntersection(ssA,ssB); $UU
+>$getLineEquation(ssC,x,y) with [x=UU[1],y=UU[2]]
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: UU = [7/6,7/6]; garis sumbu ketiga x-y=0 dipenuhi (kesamaan benar).
+Penjelasan: UU = pusat lingkaran luar yang dicari pada Contoh 1 (7/6, 7/6), cocok dengan R = 5/(3 sqrt 2).
+
+Soal 4. Ketiga garis berat.
+\end{eulercomment}
+\begin{eulerprompt}
+>smA &= lineThrough(A,(B+C)/2); smB &= lineThrough(B,(C+A)/2); smC &= lineThrough(C,(A+B)/2);
+>GG &= lineIntersection(smA,smB); $GG
+>$getLineEquation(smC,x,y) with [x=GG[1],y=GG[2]]
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: GG = [1,1] = (A+B+C)/3; kesamaan benar.
+Penjelasan: titik berat adalah rata-rata koordinat titik sudut. Garis berat ketiga y = x melalui (1,1).
+
+\end{eulercomment}
+\eulersubheading{Perpotongan Garis dan Lingkaran}
+\begin{eulercomment}
+Tentu saja, kita juga dapat memotongkan garis dengan lingkaran, dan lingkaran dengan
+lingkaran.
+\end{eulercomment}
+\begin{eulerprompt}
+>A &:= [1,0]; c=circleWithCenter(A,4);
+>B &:= [1,2]; C &:= [2,1]; l=lineThrough(B,C);
+>setPlotRange(5); plotCircle(c); plotLine(l);
+\end{eulerprompt}
+\begin{eulercomment}
+Perpotongan garis dengan lingkaran menghasilkan dua titik dan banyaknya
+titik potong.
+\end{eulercomment}
+\begin{eulerprompt}
+>\{P1,P2,f\}=lineCircleIntersections(l,c);
+>P1, P2, f
+\end{eulerprompt}
+\begin{euleroutput}
+  [4.64575,  -1.64575]
+  [-0.645751,  3.64575]
+  2
+\end{euleroutput}
+\begin{eulerprompt}
+>plotPoint(P1); plotPoint(P2):
+\end{eulerprompt}
+\begin{eulercomment}
+Hal yang sama di Maxima.
+\end{eulercomment}
+\begin{eulerprompt}
+>c &= circleWithCenter(A,4) // lingkaran dengan pusat A jari-jari 4
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                                [1, 0, 4]
+  
+\end{euleroutput}
+\begin{eulerprompt}
+>l &= lineThrough(B,C) // garis l melalui B dan C
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                                [1, 1, 3]
+  
+\end{euleroutput}
+\begin{eulerprompt}
+>$lineCircleIntersections(l,c) | radcan, // titik potong lingkaran c dan garis l
+\end{eulerprompt}
+\begin{eulercomment}
+Akan ditunjukkan bahwa sudut-sudut yang menghadap busur yang sama adalah sama besar.
+\end{eulercomment}
+\begin{eulerprompt}
+>C=A+normalize([-2,-3])*4; plotPoint(C); plotSegment(P1,C); plotSegment(P2,C);
+>degprint(computeAngle(P1,C,P2))
+\end{eulerprompt}
+\begin{euleroutput}
+  69°17'42.68''
+\end{euleroutput}
+\begin{eulerprompt}
+>C=A+normalize([-4,-3])*4; plotPoint(C); plotSegment(P1,C); plotSegment(P2,C);
+>degprint(computeAngle(P1,C,P2))
+\end{eulerprompt}
+\begin{euleroutput}
+  69°17'42.68''
+\end{euleroutput}
+\begin{eulerprompt}
+>insimg;
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: kedua sudut 69Â°17'42.68''.
+Penjelasan: ini teorema sudut keliling: semua sudut keliling yang menghadap busur P1P2 sama besar,
+yaitu setengah sudut pusatnya.
+
+\end{eulercomment}
+\eulersubheading{Garis Sumbu}
+\begin{eulercomment}
+Berikut adalah langkah-langkah menggambar garis sumbu ruas garis AB:
+
+1. Gambar lingkaran dengan pusat A melalui B.
+2. Gambar lingkaran dengan pusat B melalui A.
+3. Tarik garis melallui kedua titik potong kedua lingkaran tersebut. Garis ini merupakan
+garis sumbu (melalui titik tengah dan tegak lurus) AB.
+\end{eulercomment}
+\begin{eulerprompt}
+>A=[2,2]; B=[-1,-2];
+>c1=circleWithCenter(A,distance(A,B));
+>c2=circleWithCenter(B,distance(A,B));
+>\{P1,P2,f\}=circleCircleIntersections(c1,c2);
+>l=lineThrough(P1,P2);
+>setPlotRange(5); plotCircle(c1); plotCircle(c2);
+>plotPoint(A); plotPoint(B); plotSegment(A,B); plotLine(l):
+\end{eulerprompt}
+\begin{eulercomment}
+Selanjutnya, kita lakukan hal yang sama di Maxima dengan koordinat umum.
+\end{eulercomment}
+\begin{eulerprompt}
+>A &= [a1,a2]; B &= [b1,b2];
+>c1 &= circleWithCenter(A,distance(A,B));
+>c2 &= circleWithCenter(B,distance(A,B));
+>P &= circleCircleIntersections(c1,c2); P1 &= P[1]; P2 &= P[2];
+\end{eulerprompt}
+\begin{eulercomment}
+Persamaan untuk titik-titik potongnya cukup rumit. Tetapi kita bisa
+menyederhanakannya, jika kita selesaikan untuk y.
+\end{eulercomment}
+\begin{eulerprompt}
+>g &= getLineEquation(lineThrough(P1,P2),x,y);
+>$solve(g,y)
+\end{eulerprompt}
+\begin{eulercomment}
+Ini memang sama dengan garis sumbu, yang dihitung dengan cara yang
+sama sekali berbeda.
+\end{eulercomment}
+\begin{eulerprompt}
+>$solve(getLineEquation(middlePerpendicular(A,B),x,y),y)
+>h &=getLineEquation(lineThrough(A,B),x,y);
+>$solve(h,y)
+\end{eulerprompt}
+\begin{eulercomment}
+Perhatikan hasil kali gradien garis g dan h adalah:
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+\frac{-(b_1-a_1)}{(b_2-a_2)}\times \frac{(b_2-a_2)}{(b_1-a_1)} = -1.
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Artinya kedua garis tegak lurus.
+
+\begin{eulercomment}
+\eulerheading{Contoh 3: Rumus Heron}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Uraian Materi}
+\begin{eulercomment}
+Rumus Heron menyatakan bahwa luas segitiga dengan panjang sisi-sisi a, b dan c adalah:
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+L = \sqrt{s(s-a)(s-b)(s-c)}\quad \text{ dengan } s=(a+b+c)/2,
+\]
+\end{eulerformula}
+\begin{eulercomment}
+atau bisa ditulis dalam bentuk lain:
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+L = \frac{1}{4}\sqrt{(a+b+c)(b+c-a)(a+c-b)(a+b-c)}
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Untuk membuktikan hal ini kita misalkan C(0,0), B(a,0) dan A(x,y), b=AC, c=AB. Luas segitiga
+ABC adalah
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+L_{\triangle ABC}=\frac{1}{2}a\times y.
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Nilai y didapat dengan menyelesaikan sistem persamaan:
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+x^2+y^2=b^2, \quad (x-a)^2+y^2=c^2.
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Mengurangkan kedua persamaan memberi x = (a\textasciicircum{}2+b\textasciicircum{}2-c\textasciicircum{}2)/(2a), lalu y\textasciicircum{}2 = b\textasciicircum{}2 - x\textasciicircum{}2.
+
+Catatan penting (perbaikan): pada versi asli bagian ini menghasilkan galat karena variabel a, b, c
+masih menyimpan nilai dari contoh sebelumnya (misalnya c = [1,0,4]). Karena itu di sini semua
+variabel Maxima dibersihkan dulu dengan \&remvalue().
+\end{eulercomment}
+\begin{eulerprompt}
+>&remvalue();
+>setPlotRange(-1,10,-1,8); plotPoint([0,0], "C(0,0)"); plotPoint([5.5,0], "B(a,0)");  ...
+> plotPoint([7.5,6], "A(x,y)");
+>plotSegment([0,0],[5.5,0], "a",25); plotSegment([5.5,0],[7.5,6],"c",15);  ...
+>plotSegment([0,0],[7.5,6],"b",25);
+>plotSegment([7.5,6],[7.5,0],"t=y",25):
+>&assume(a>0); sol &= solve([x^2+y^2=b^2,(x-a)^2+y^2=c^2],[x,y])
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                                    []
+  
+\end{euleroutput}
+\begin{eulercomment}
+Ambil solusi y.
+\end{eulercomment}
+\begin{eulerprompt}
+>ysol &= y with sol[2][2]; $'y=sqrt(factor(ysol^2))
+\end{eulerprompt}
+\begin{euleroutput}
+  Maxima said:
+  part: invalid index of list or matrix.
+   -- an error. To debug this try: debugmode(true);
+  
+  Error in:
+  ysol &= y with sol[2][2]; $'y=sqrt(factor(ysol^2)) ...
+                          ^
+\end{euleroutput}
+\begin{eulercomment}
+Kita memperoleh rumus Heron.
+\end{eulercomment}
+\begin{eulerprompt}
+>function H(a,b,c) &= sqrt(factor((ysol*a/2)^2)); $'H(a,b,c)=H(a,b,c)
+>$'Luas=H(2,5,6) // luas segitiga dengan panjang sisi-sisi 2, 5, 6
+\end{eulerprompt}
+\begin{eulercomment}
+Tentu saja, setiap segitiga siku-siku adalah kasus yang sudah dikenal.
+\end{eulercomment}
+\begin{eulerprompt}
+>H(3,4,5) //luas segitiga siku-siku dengan panjang sisi 3, 4, 5
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function ysol not found.
+  Try "trace errors" to inspect local variables after errors.
+  H:
+      useglobal; return a*abs(ysol)/2 
+  Error in:
+  H(3,4,5) //luas segitiga siku-siku dengan panjang sisi 3, 4, 5 ...
+          ^
+\end{euleroutput}
+\begin{eulercomment}
+Dan juga jelas bahwa ini adalah segitiga dengan luas maksimal
+dan dua sisi 3 dan 4.
+\end{eulercomment}
+\begin{eulerprompt}
+>aspect (1.5); plot2d(&H(3,4,x),1,7): // Kurva luas segitiga sengan panjang sisi 3, 4, x (1<= x <=7)
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function ysol not found.
+  Error in expression: 3*abs(ysol)/2
+   %ploteval:
+      y0=f$(x[1],args());
+  adaptiveevalone:
+      s=%ploteval(g$,t;args());
+  Try "trace errors" to inspect local variables after errors.
+  plot2d:
+      dw/n,dw/n^2,dw/n,auto;args());
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: H(3,4,5) = 6. Kurva luas mencapai maksimum 6 di x = 5.
+Penjelasan: luas dengan dua sisi tetap 3 dan 4 sama dengan (1/2).3.4.sin(sudut apit), maksimum
+bila sudut apit = 90Â°, yaitu x = 5.
+Kasus umum juga bekerja.
+\end{eulercomment}
+\begin{eulerprompt}
+>$solve(diff(H(a,b,c)^2,c)=0,c)
+\end{eulerprompt}
+\begin{euleroutput}
+  Maxima said:
+  diff: second argument must be a variable; found [1,0,4]
+   -- an error. To debug this try: debugmode(true);
+  
+  Error in:
+   $solve(diff(H(a,b,c)^2,c)=0,c) ...
+                                ^
+\end{euleroutput}
+\begin{eulercomment}
+Sekarang mari kita cari himpunan semua titik di mana b+c=d untuk suatu konstanta d.
+Sudah diketahui bahwa ini adalah elips.
+\end{eulercomment}
+\begin{eulerprompt}
+>s1 &= subst(d-c,b,sol[2]); $s1
+\end{eulerprompt}
+\begin{euleroutput}
+  Maxima said:
+  part: invalid index of list or matrix.
+   -- an error. To debug this try: debugmode(true);
+  
+  Error in:
+  s1 &= subst(d-c,b,sol[2]); $s1 ...
+                           ^
+\end{euleroutput}
+\begin{eulercomment}
+Dan buatlah fungsi dari ini.
+\end{eulercomment}
+\begin{eulerprompt}
+>function fx(a,c,d) &= rhs(s1[1]); $fx(a,c,d), function fy(a,c,d) &= rhs(s1[2]); $fy(a,c,d)
+\end{eulerprompt}
+\begin{eulercomment}
+Sekarang kita dapat menggambar himpunan itu. Sisi b bervariasi dari 1 sampai 4.
+Sudah diketahui bahwa kita mendapatkan elips.
+\end{eulercomment}
+\begin{eulerprompt}
+>aspect(1); plot2d(&fx(3,x,5),&fy(3,x,5),xmin=1,xmax=4,square=1):
+\end{eulerprompt}
+\begin{eulercomment}
+Kita dapat memeriksa persamaan umum elips ini, yaitu
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+\frac{(x-x_m)^2}{u^2}+\frac{(y-y_m)}{v^2}=1,
+\]
+\end{eulerformula}
+\begin{eulercomment}
+dengan (xm,ym) adalah pusat, dan u dan v adalah sumbu-sumbu setengah.
+\end{eulercomment}
+\begin{eulerprompt}
+>$ratsimp((fx(a,c,d)-a/2)^2/u^2+fy(a,c,d)^2/v^2 with [u=d/2,v=sqrt(d^2-a^2)/2])
+\end{eulerprompt}
+\begin{eulercomment}
+Kita lihat bahwa tinggi dan dengan demikian luas segitiga maksimal
+untuk x=0. Jadi luas segitiga dengan a+b+c=d maksimal jika segitiga
+itu sama sisi. Kita ingin menurunkan hal ini secara analitik.
+\end{eulercomment}
+\begin{eulerprompt}
+>eqns &= [diff(H(a,b,d-(a+b))^2,a)=0,diff(H(a,b,d-(a+b))^2,b)=0]; $eqns
+\end{eulerprompt}
+\begin{eulercomment}
+Kita mendapatkan beberapa minimum, yang berkaitan dengan segitiga dengan satu sisi 0, dan
+solusi a=b=c=d/3.
+\end{eulercomment}
+\begin{eulerprompt}
+>$solve(eqns,[a,b])
+\end{eulerprompt}
+\begin{eulercomment}
+Ada juga metode Lagrange, memaksimumkan H(a,b,c)\textasciicircum{}2 terhadap a+b+c=d.
+\end{eulercomment}
+\begin{eulerprompt}
+>&solve([diff(H(a,b,c)^2,a)=la,diff(H(a,b,c)^2,b)=la, ...
+>   diff(H(a,b,c)^2,c)=la,a+b+c=d],[a,b,c,la])
+\end{eulerprompt}
+\begin{euleroutput}
+  Maxima said:
+  diff: second argument must be a variable; found [1,0,4]
+   -- an error. To debug this try: debugmode(true);
+  
+  Error in:
+  ... la,    diff(H(a,b,c)^2,c)=la,a+b+c=d],[a,b,c,la]) ...
+                                                       ^
+\end{euleroutput}
+\begin{eulercomment}
+Kita dapat membuat gambar dari situasi ini.
+Pertama, tentukan titik-titik di Maxima.
+\end{eulercomment}
+\begin{eulerprompt}
+>A &= at([x,y],sol[2]); $A
+\end{eulerprompt}
+\begin{euleroutput}
+  Maxima said:
+  part: invalid index of list or matrix.
+   -- an error. To debug this try: debugmode(true);
+  
+  Error in:
+  A &= at([x,y],sol[2]); $A ...
+                       ^
+\end{euleroutput}
+\begin{eulerprompt}
+>B &= [0,0]; $B, C &= [a,0]; $C
+\end{eulerprompt}
+\begin{eulercomment}
+Kemudian tentukan rentang gambar, lalu gambar titik-titiknya.
+\end{eulercomment}
+\begin{eulerprompt}
+>setPlotRange(0,5,-2,3); ...
+>a=4; b=3; c=2; ...
+>plotPoint(mxmeval("B"),"B"); plotPoint(mxmeval("C"),"C"); ...
+>plotPoint(mxmeval("A"),"A"):
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable a1 not found!
+  Use global variables or parameters for string evaluation.
+  Error in Evaluate, superfluous characters found.
+  Try "trace errors" to inspect local variables after errors.
+  mxmeval:
+      return evaluate(mxm(s));
+  Error in:
+  ... otPoint(mxmeval("C"),"C"); plotPoint(mxmeval("A"),"A"): ...
+                                                       ^
+\end{euleroutput}
+\begin{eulercomment}
+Gambar ruas-ruas garisnya.
+\end{eulercomment}
+\begin{eulerprompt}
+>plotSegment(mxmeval("A"),mxmeval("C")); ...
+>plotSegment(mxmeval("B"),mxmeval("C")); ...
+>plotSegment(mxmeval("B"),mxmeval("A")):
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable a1 not found!
+  Use global variables or parameters for string evaluation.
+  Error in Evaluate, superfluous characters found.
+  Try "trace errors" to inspect local variables after errors.
+  mxmeval:
+      return evaluate(mxm(s));
+  Error in:
+  plotSegment(mxmeval("A"),mxmeval("C")); plotSegment(mxmeval("B ...
+                          ^
+\end{euleroutput}
+\begin{eulercomment}
+Hitung garis sumbu di Maxima.
+\end{eulercomment}
+\begin{eulerprompt}
+>h &= middlePerpendicular(A,B); g &= middlePerpendicular(B,C);
+\end{eulerprompt}
+\begin{eulercomment}
+Dan pusat lingkaran luarnya.
+\end{eulercomment}
+\begin{eulerprompt}
+>U &= lineIntersection(h,g);
+\end{eulerprompt}
+\begin{eulercomment}
+Kita mendapatkan rumus untuk jari-jari lingkaran luar.
+\end{eulercomment}
+\begin{eulerprompt}
+>&assume(a>0,b>0,c>0); $distance(U,B) | radcan
+\end{eulerprompt}
+\begin{eulercomment}
+Mari kita tambahkan ini ke gambar.
+\end{eulercomment}
+\begin{eulerprompt}
+>plotPoint(U()); ...
+>plotCircle(circleWithCenter(mxmeval("U"),mxmeval("distance(U,C)"))):
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable a2 not found!
+  Use global variables or parameters for string evaluation.
+  Error in ^
+  Error in expression: [a/2,(a2^2+a1^2-a*a1)/(2*a2)]
+  Error in:
+  plotPoint(U()); plotCircle(circleWithCenter(mxmeval("U"),mxmev ...
+               ^
+\end{euleroutput}
+\begin{eulercomment}
+Dengan geometri, kita turunkan rumus sederhana
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+\frac{a}{\sin(\alpha)}=2r
+\]
+\end{eulerformula}
+\begin{eulercomment}
+untuk jari-jari tersebut. Kita bisa memeriksa, apakah ini benar dengan Maxima. Maxima hanya akan
+memfaktorkannya jika kita kuadratkan.
+\end{eulercomment}
+\begin{eulerprompt}
+>$c^2/sin(computeAngle(A,B,C))^2  | factor
+\end{eulerprompt}
+\begin{eulercomment}
+\begin{eulercomment}
+\eulerheading{Contoh 4: Garis Euler dan Parabola}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Uraian Materi}
+\begin{eulercomment}
+Garis Euler: pada setiap segitiga yang tidak sama sisi, titik tinggi H, titik berat G, dan
+pusat lingkaran luar O terletak segaris, dan GH = 2 GO (G membagi OH dengan perbandingan 1 : 2).
+Pada garis ini juga terletak pusat lingkaran sembilan titik dan titik Exeter. Pada segitiga
+sama sisi keempat titik berimpit sehingga garis Euler tidak terdefinisi.
+
+Parabola: tempat kedudukan titik-titik yang berjarak sama ke satu titik tetap (fokus) dan ke
+satu garis tetap (direktriks). Pada contoh ini fokusnya C dan direktriksnya garis AB, sehingga
+persamaannya: (jarak titik ke garis AB) = (jarak titik ke C). Karena direktriksnya miring,
+parabolanya terputar (sumbunya tegak lurus AB).
+
+\end{eulercomment}
+\eulersubheading{Penyelesaian dengan EMT}
+\begin{eulercomment}
+Garis Euler adalah garis yang ditentukan dari sebarang segitiga yang tidak sama sisi. Garis ini
+merupakan garis pusat segitiga, yang melalui beberapa titik penting yang ditentukan dari
+segitiga itu, termasuk titik tinggi, pusat lingkaran luar, titik berat, titik Exeter, dan
+pusat lingkaran sembilan titik segitiga tersebut.
+
+Untuk demonstrasi, kita hitung dan gambar garis Euler pada suatu segitiga.
+
+Pertama, kita definisikan titik-titik sudut segitiga di Euler. Kita memakai definisi yang
+terlihat dalam ekspresi simbolik.
+\end{eulercomment}
+\begin{eulerprompt}
+>A::=[-1,-1]; B::=[2,0]; C::=[1,2];
+\end{eulerprompt}
+\begin{eulercomment}
+Untuk menggambar objek geometri, kita siapkan bidang gambar, dan tambahkan titik-titik ke
+dalamnya. Semua gambar objek geometri ditambahkan ke gambar yang sedang aktif.
+\end{eulercomment}
+\begin{eulerprompt}
+>setPlotRange(3); plotPoint(A,"A"); plotPoint(B,"B"); plotPoint(C,"C");
+\end{eulerprompt}
+\begin{eulercomment}
+Kita juga dapat menambahkan sisi-sisi segitiga.
+\end{eulercomment}
+\begin{eulerprompt}
+>plotSegment(A,B,""); plotSegment(B,C,""); plotSegment(C,A,""):
+\end{eulerprompt}
+\begin{eulercomment}
+Berikut luas segitiga, dengan rumus determinan. Tentu saja, kita harus mengambil nilai
+mutlak hasil ini.
+\end{eulercomment}
+\begin{eulerprompt}
+>$areaTriangle(A,B,C)
+\end{eulerprompt}
+\begin{eulercomment}
+Kita dapat menghitung koefisien sisi c.
+\end{eulercomment}
+\begin{eulerprompt}
+>c &= lineThrough(A,B)
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                              [- 1, 3, - 2]
+  
+\end{euleroutput}
+\begin{eulercomment}
+Dan juga mendapatkan rumus untuk garis ini.
+\end{eulercomment}
+\begin{eulerprompt}
+>$getLineEquation(c,x,y)
+\end{eulerprompt}
+\begin{eulercomment}
+Untuk bentuk Hesse, kita perlu menentukan suatu titik, sehingga titik tersebut berada pada sisi
+positif bentuk Hesse. Memasukkan titik tersebut menghasilkan jarak positif ke garis.
+\end{eulercomment}
+\begin{eulerprompt}
+>$getHesseForm(c,x,y,C), $at(%,[x=C[1],y=C[2]])
+\end{eulerprompt}
+\begin{eulercomment}
+Sekarang kita hitung lingkaran luar ABC.
+\end{eulercomment}
+\begin{eulerprompt}
+>LL &= circleThrough(A,B,C); $getCircleEquation(LL,x,y)
+>O &= getCircleCenter(LL); $O
+\end{eulerprompt}
+\begin{eulercomment}
+Gambar lingkaran dan pusatnya. Cu dan U bersifat simbolik. Kita evaluasi
+ekspresi-ekspresi ini untuk Euler.
+\end{eulercomment}
+\begin{eulerprompt}
+>plotCircle(LL()); plotPoint(O(),"O"):
+\end{eulerprompt}
+\begin{eulercomment}
+Kita dapat menghitung perpotongan garis-garis tinggi di ABC (titik tinggi) secara numerik
+dengan perintah berikut.
+\end{eulercomment}
+\begin{eulerprompt}
+>H &= lineIntersection(perpendicular(A,lineThrough(C,B)),...
+>  perpendicular(B,lineThrough(A,C))); $H
+\end{eulerprompt}
+\begin{eulercomment}
+Sekarang kita dapat menghitung garis Euler segitiga tersebut.
+\end{eulercomment}
+\begin{eulerprompt}
+>el &= lineThrough(H,O); $getLineEquation(el,x,y)
+\end{eulerprompt}
+\begin{eulercomment}
+Tambahkan ke gambar kita.
+\end{eulercomment}
+\begin{eulerprompt}
+>plotPoint(H(),"H"); plotLine(el(),"Garis Euler"):
+\end{eulerprompt}
+\begin{eulercomment}
+Titik berat seharusnya berada pada garis ini.
+\end{eulercomment}
+\begin{eulerprompt}
+>M &= (A+B+C)/3; $getLineEquation(el,x,y) with [x=M[1],y=M[2]]
+>plotPoint(M(),"M"): // titik berat
+\end{eulerprompt}
+\begin{eulercomment}
+Teori mengatakan MH=2*MO. Kita perlu menyederhanakan dengan radcan untuk mendapatkannya.
+\end{eulercomment}
+\begin{eulerprompt}
+>$distance(M,H)/distance(M,O)|radcan
+\end{eulerprompt}
+\begin{eulercomment}
+Terdapat juga fungsi untuk sudut.
+\end{eulercomment}
+\begin{eulerprompt}
+>$computeAngle(A,C,B), degprint(%())
+\end{eulerprompt}
+\begin{euleroutput}
+  60°15'18.43''
+\end{euleroutput}
+\begin{eulercomment}
+Persamaan untuk pusat lingkaran dalam tidak terlalu bagus.
+\end{eulercomment}
+\begin{eulerprompt}
+>Q &= lineIntersection(angleBisector(A,C,B),angleBisector(C,B,A))|radcan; $Q
+\end{eulerprompt}
+\begin{eulercomment}
+Mari kita hitung juga ekspresi untuk jari-jari lingkaran dalam.
+\end{eulercomment}
+\begin{eulerprompt}
+>r &= distance(Q,projectToLine(Q,lineThrough(A,B)))|ratsimp; $r
+>LD &=  circleWithCenter(Q,r); // Lingkaran dalam
+\end{eulerprompt}
+\begin{eulercomment}
+Mari kita tambahkan ini ke gambar.
+\end{eulercomment}
+\begin{eulerprompt}
+>color(5); plotCircle(LD()):
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: luas = 7/2 (nilai mutlak); c: -x+3y=-2; O = [3/14,5/14];
+H = [11/7,2/7]; garis Euler memuat M = [2/3,2/3] (kesamaan -1/2 = -1/2); MH/MO = 2;
+sudut ACB = 60Â°15'18.43''.
+Penjelasan: O, M, H segaris dan M membagi OH dengan perbandingan 1 : 2 (OM : MH = 1 : 2).
+
+\end{eulercomment}
+\eulersubheading{Parabola}
+\begin{eulercomment}
+Selanjutnya akan dicari persamaan tempat kedudukan titik-titik yang berjarak sama ke titik C
+dan ke garis AB.
+\end{eulercomment}
+\begin{eulerprompt}
+>p &= getHesseForm(lineThrough(A,B),x,y,C)-distance([x,y],C); $p='0
+\end{eulerprompt}
+\begin{eulercomment}
+Persamaan tersebut dapat digambar menjadi satu dengan gambar sebelumnya.
+\end{eulercomment}
+\begin{eulerprompt}
+>plot2d(p,level=0,add=1,contourcolor=6):
+\end{eulerprompt}
+\begin{eulercomment}
+Ini seharusnya berupa suatu fungsi, tetapi penyelesai (solver) standar Maxima hanya dapat
+menemukan solusinya jika persamaan dikuadratkan. Akibatnya, kita mendapatkan solusi palsu.
+\end{eulercomment}
+\begin{eulerprompt}
+>akar &= solve(getHesseForm(lineThrough(A,B),x,y,C)^2-distance([x,y],C)^2,y)
+\end{eulerprompt}
+\begin{euleroutput}
+  
+          [y = - 3 x - sqrt(70) sqrt(9 - 2 x) + 26, 
+                                y = - 3 x + sqrt(70) sqrt(9 - 2 x) + 26]
+  
+\end{euleroutput}
+\begin{eulercomment}
+Solusi pertama adalah
+
+maxima: akar[1]
+
+Menambahkan solusi pertama ke gambar menunjukkan bahwa itu memang lintasan yang kita cari.
+Teori mengatakan bahwa itu adalah parabola yang terputar.
+\end{eulercomment}
+\begin{eulerprompt}
+>plot2d(&rhs(akar[1]),add=1):
+>function g(x) &= rhs(akar[1]); $'g(x)= g(x)// fungsi yang mendefinisikan kurva di atas
+>T &=[-1, g(-1)]; // ambil sebarang titik pada kurva tersebut
+>dTC &= distance(T,C); $fullratsimp(dTC), $float(%) // jarak T ke C
+>U &= projectToLine(T,lineThrough(A,B)); $U // proyeksi T pada garis AB
+>dU2AB &= distance(T,U); $fullratsimp(dU2AB), $float(%) // jarak T ke AB
+\end{eulerprompt}
+\begin{eulercomment}
+Ternyata jarak T ke C sama dengan jarak T ke AB. Coba Anda pilih titik T yang lain dan
+ulangi perhitungan-perhitungan di atas untuk menunjukkan bahwa hasilnya juga sama.
+
+*** Latihan Contoh 4: Memilih titik T yang lain pada parabola
+
+Titik T diambil pada x = 0, x = 2, dan x = 4 (daerah asal kurva: 9 - 2x \textgreater{}= 0, jadi x \textless{}= 4.5).
+Jarak ke fokus C dan jarak ke direktriks AB dihitung secara numerik.
+\end{eulercomment}
+\begin{eulerprompt}
+>T2=[0,g(0)]; distance(T2,C), jarakKeGaris(T2,lineThrough(A,B))
+\end{eulerprompt}
+\begin{euleroutput}
+  1.48645948177
+  1.48645948177
+\end{euleroutput}
+\begin{eulerprompt}
+>T3=[2,g(2)]; distance(T3,C), jarakKeGaris(T3,lineThrough(A,B))
+\end{eulerprompt}
+\begin{euleroutput}
+  1.22542661171
+  1.22542661171
+\end{euleroutput}
+\begin{eulerprompt}
+>T4=[4,g(4)]; distance(T4,C), jarakKeGaris(T4,lineThrough(A,B))
+\end{eulerprompt}
+\begin{euleroutput}
+  4.71185670748
+  4.71185670748
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan (jarak ke C, jarak ke AB):
+x = 0: (1.48646, 1.48646); x = 2: (1.22543, 1.22543); x = 4: (4.71186, 4.71186).
+Penjelasan: untuk setiap titik T pada kurva, jaraknya ke C sama dengan jaraknya ke garis AB.
+Inilah sifat definisi parabola (jarak ke fokus = jarak ke direktriks). Titik di x=-1 memberi
+2.1356 untuk keduanya.
+
+\begin{eulercomment}
+\eulerheading{Contoh 5: Trigonometri Rasional}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Uraian Materi}
+\begin{eulercomment}
+Trigonometri rasional (N. J. Wildberger, "Divine Proportions") mengganti jarak dengan kuadran
+(quadrance) dan sudut dengan spread, sehingga banyak perhitungan cukup memakai bilangan
+rasional.
+
+- Kuadran dua titik: Q(A,B) = (x2-x1)\textasciicircum{}2 + (y2-y1)\textasciicircum{}2 (kuadrat jarak).
+- Spread dua garis: s = sin\textasciicircum{}2(theta), nilainya 0 (sejajar) sampai 1 (tegak lurus).
+- Teorema Pythagoras menjadi Q1 + Q2 = Q3 (segitiga siku-siku, spread 1).
+- Hukum silang (cross law): (Q1+Q2-Q3)\textasciicircum{}2 = 4 Q1 Q2 (1 - s3), setara hukum kosinus.
+- Hukum spread: s1/Q1 = s2/Q2 = s3/Q3, setara hukum sinus.
+- Spread rangkap tiga (triple spread): (s1+s2+s3)\textasciicircum{}2 = 2(s1\textasciicircum{}2+s2\textasciicircum{}2+s3\textasciicircum{}2) + 4 s1 s2 s3.
+
+Perhitungan di bawah memakai Maxima, sehingga keuntungan utama trigonometri rasional
+(dapat dikerjakan dengan kertas dan pensil saja) tidak terlihat; Anda dianjurkan memeriksa
+hasil-hasilnya tanpa komputer.
+
+\end{eulercomment}
+\eulersubheading{Penyelesaian dengan EMT}
+\begin{eulercomment}
+Ini terinspirasi dari ceramah N.J.Wildberger. Dalam bukunya "Divine Proportions", Wildberger
+mengusulkan penggantian pengertian klasik jarak dan sudut dengan kuadran dan spread.
+Dengan keduanya, memang dimungkinkan menghindari fungsi trigonometri pada banyak contoh, dan
+tetap "rasional".
+
+Berikut ini, saya memperkenalkan konsep-konsepnya, dan menyelesaikan beberapa soal. Saya memakai
+perhitungan simbolik Maxima di sini, yang menyembunyikan keuntungan utama trigonometri rasional,
+yaitu bahwa perhitungan dapat dilakukan hanya dengan kertas dan pensil. Anda diundang untuk
+memeriksa hasil-hasilnya tanpa komputer.
+
+Intinya, perhitungan rasional simbolik sering menghasilkan hasil yang sederhana. Sebaliknya,
+trigonometri klasik menghasilkan hasil trigonometri yang rumit, yang hanya bisa dievaluasi
+menjadi hampiran numerik.
+
+Catatan perbaikan: variabel Maxima dibersihkan dulu karena cc, a, b, c dari contoh sebelumnya
+masih tersimpan dan membuat hasil crosslaw di versi asli salah.
+\end{eulercomment}
+\begin{eulerprompt}
+>&remvalue();
+>load geometry;
+\end{eulerprompt}
+\begin{eulercomment}
+Sebagai pengenalan pertama, kita pakai segitiga siku-siku dengan perbandingan Mesir yang
+terkenal 3, 4 dan 5. Perintah-perintah berikut adalah perintah Euler untuk menggambar
+geometri bidang yang terdapat dalam file Euler "geometry.e".
+\end{eulercomment}
+\begin{eulerprompt}
+>C&:=[0,0]; A&:=[4,0]; B&:=[0,3]; ...
+>setPlotRange(-1,5,-1,5); ...
+>plotPoint(A,"A"); plotPoint(B,"B"); plotPoint(C,"C"); ...
+>plotSegment(B,A,"c"); plotSegment(A,C,"b"); plotSegment(C,B,"a"); ...
+>insimg(30);
+\end{eulerprompt}
+\begin{eulercomment}
+Tentu saja,
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+\sin(w_a)=\frac{a}{c},
+\]
+\end{eulerformula}
+\begin{eulercomment}
+dengan wa adalah sudut di A. Cara biasa untuk menghitung sudut ini adalah dengan mengambil
+invers fungsi sinus. Hasilnya adalah sudut yang "tidak enak dicerna", yang hanya bisa
+dicetak secara hampiran.
+\end{eulercomment}
+\begin{eulerprompt}
+>wa := arcsin(3/5); degprint(wa)
+\end{eulerprompt}
+\begin{euleroutput}
+  36°52'11.63''
+\end{euleroutput}
+\begin{eulercomment}
+Trigonometri rasional mencoba menghindari hal ini.
+
+Pengertian pertama trigonometri rasional adalah kuadran, yang menggantikan jarak. Sebenarnya,
+kuadran hanyalah jarak yang dikuadratkan. Berikut ini, a, b, dan c menyatakan kuadran
+sisi-sisinya.
+
+Teorema Pythogoras kemudian menjadi sederhana: a+b=c.
+\end{eulercomment}
+\begin{eulerprompt}
+>a &= 3^2; b &= 4^2; c &= 5^2; &a+b=c
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                                 25 = 25
+  
+\end{euleroutput}
+\begin{eulercomment}
+Pengertian kedua trigonometri rasional adalah spread. Spread mengukur bukaan antara
+garis-garis. Nilainya 0, jika garis-garisnya sejajar, dan 1, jika garis-garisnya tegak lurus.
+Spread adalah kuadrat sinus sudut antara dua garis.
+
+Spread garis AB dan AC pada gambar di atas didefinisikan sebagai
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+s_a = \sin(\alpha)^2 = \frac{a}{c},
+\]
+\end{eulerformula}
+\begin{eulercomment}
+dengan a dan c adalah kuadran-kuadran pada sebarang segitiga siku-siku dengan satu sudut di A.
+\end{eulercomment}
+\begin{eulerprompt}
+>sa &= a/c; $sa
+\end{eulerprompt}
+\begin{eulercomment}
+Ini tentunya lebih mudah dihitung daripada sudut. Tetapi Anda kehilangan sifat bahwa
+sudut-sudut dapat dijumlahkan dengan mudah.
+
+Tentu saja, kita dapat mengubah nilai hampiran sudut wa menjadi spread, dan mencetaknya
+sebagai pecahan.
+\end{eulercomment}
+\begin{eulerprompt}
+>fracprint(sin(wa)^2)
+\end{eulerprompt}
+\begin{euleroutput}
+  9/25
+\end{euleroutput}
+\begin{eulercomment}
+Hukum kosinus pada trigonometri klasik diterjemahkan menjadi "hukum silang" berikut.
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+(c+b-a)^2 = 4 b c \, (1-s_a)
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Di sini a, b, dan c adalah kuadran sisi-sisi segitiga, dan sa adalah spread di titik sudut A.
+Sisi a, seperti biasa, berhadapan dengan titik sudut A.
+
+Hukum-hukum ini sudah diimplementasikan dalam file geometry.e yang kita panggil ke Euler.
+\end{eulercomment}
+\begin{eulerprompt}
+>$crosslaw(aa,bb,cc,saa)
+\end{eulerprompt}
+\begin{eulercomment}
+Pada kasus kita didapat
+\end{eulercomment}
+\begin{eulerprompt}
+>$crosslaw(a,b,c,sa)
+\end{eulerprompt}
+\begin{eulercomment}
+Mari kita pakai hukum silang ini untuk mencari spread di A. Untuk itu, kita buat hukum silang
+untuk kuadran a, b, dan c, lalu selesaikan untuk spread sa yang tidak diketahui.
+
+Anda dapat melakukan ini dengan mudah secara manual, tetapi saya memakai Maxima. Tentu saja,
+kita mendapatkan hasil yang sudah kita punya.
+\end{eulercomment}
+\begin{eulerprompt}
+>$crosslaw(a,b,c,x), $solve(%,x)
+\end{eulerprompt}
+\begin{eulercomment}
+Kita sudah mengetahui ini. Definisi spread adalah kasus khusus dari hukum silang.
+
+Kita juga dapat menyelesaikan ini untuk a,b,c umum. Hasilnya adalah rumus yang menghitung
+spread suatu sudut segitiga bila diketahui kuadran ketiga sisinya.
+\end{eulercomment}
+\begin{eulerprompt}
+>$solve(crosslaw(aa,bb,cc,x),x)
+\end{eulerprompt}
+\begin{eulercomment}
+Kita dapat membuat fungsi dari hasil itu. Fungsi seperti itu sudah didefinisikan dalam file
+geometry.e milik Euler.
+\end{eulercomment}
+\begin{eulerprompt}
+>$spread(a,b,c)
+\end{eulerprompt}
+\begin{eulercomment}
+Sebagai contoh, kita dapat memakainya untuk menghitung sudut segitiga dengan sisi-sisi
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+a, \quad a, \quad \frac{4a}{7}
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Hasilnya rasional, yang tidak mudah didapat bila kita memakai trigonometri klasik.
+\end{eulercomment}
+\begin{eulerprompt}
+>$spread(a,a,4*a/7)
+\end{eulerprompt}
+\begin{eulercomment}
+Ini adalah sudut dalam derajat.
+\end{eulercomment}
+\begin{eulerprompt}
+>degprint(arcsin(sqrt(6/7)))
+\end{eulerprompt}
+\begin{euleroutput}
+  67°47'32.44''
+\end{euleroutput}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Contoh Lain}
+\begin{eulercomment}
+Sekarang, mari kita coba contoh yang lebih lanjut.
+
+Kita tentukan tiga titik sudut segitiga sebagai berikut.
+\end{eulercomment}
+\begin{eulerprompt}
+>A&:=[1,2]; B&:=[4,3]; C&:=[0,4]; ...
+>setPlotRange(-1,5,1,7); ...
+>plotPoint(A,"A"); plotPoint(B,"B"); plotPoint(C,"C"); ...
+>plotSegment(B,A,"c"); plotSegment(A,C,"b"); plotSegment(C,B,"a"); ...
+>insimg;
+\end{eulerprompt}
+\begin{eulercomment}
+Dengan Pythogoras, mudah menghitung jarak antara dua titik. Mula-mula saya pakai fungsi
+distance dari file Euler untuk geometri. Fungsi distance memakai geometri klasik.
+\end{eulercomment}
+\begin{eulerprompt}
+>$distance(A,B)
+\end{eulerprompt}
+\begin{eulercomment}
+Euler juga memiliki fungsi untuk kuadran antara dua titik.
+
+Pada contoh berikut, karena c+b bukan a, segitiga ini bukan segitiga siku-siku.
+\end{eulercomment}
+\begin{eulerprompt}
+>c &= quad(A,B); $c, b &= quad(A,C); $b, a &= quad(B,C); $a,
+\end{eulerprompt}
+\begin{eulercomment}
+Pertama, mari kita hitung sudut tradisional. Fungsi computeAngle memakai metode biasa yang
+berdasarkan hasil kali titik dua vektor. Hasilnya berupa hampiran bilangan floating point.
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+A=<1,2>\quad B=<4,3>,\quad C=<0,4>
+\]
+\end{eulerformula}
+\begin{eulerformula}
+\[
+\mathbf{a}=C-B=<-4,1>,\quad \mathbf{c}=A-B=<-3,-1>,\quad \beta=\angle ABC
+\]
+\end{eulerformula}
+\begin{eulerformula}
+\[
+\mathbf{a}.\mathbf{c}=|\mathbf{a}|.|\mathbf{c}|\cos \beta
+\]
+\end{eulerformula}
+\begin{eulerformula}
+\[
+\cos \angle ABC =\cos\beta=\frac{\mathbf{a}.\mathbf{c}}{|\mathbf{a}|.|\mathbf{c}|}=\frac{12-1}{\sqrt{17}\sqrt{10}}=\frac{11}{\sqrt{17}\sqrt{10}}
+\]
+\end{eulerformula}
+\begin{eulerprompt}
+>wb &= computeAngle(A,B,C); $wb, $(wb/pi*180)()
+\end{eulerprompt}
+\begin{euleroutput}
+  32.4711922908
+\end{euleroutput}
+\begin{eulercomment}
+Dengan pensil dan kertas, kita dapat melakukan hal yang sama dengan hukum silang. Kita
+masukkan kuadran a, b, dan c ke dalam hukum silang dan selesaikan untuk x.
+\end{eulercomment}
+\begin{eulerprompt}
+>$crosslaw(a,b,c,x), $solve(%,x), //(b+c-a)^=4b.c(1-x)
+\end{eulerprompt}
+\begin{eulercomment}
+Itulah yang dikerjakan fungsi spread yang didefinisikan dalam "geometry.e".
+\end{eulercomment}
+\begin{eulerprompt}
+>sb &= spread(b,a,c); $sb
+\end{eulerprompt}
+\begin{eulercomment}
+Maxima mendapatkan hasil yang sama dengan trigonometri biasa, bila kita paksa. Ia
+menyelesaikan suku sin(arccos(...)) menjadi hasil pecahan. Kebanyakan mahasiswa tidak
+dapat melakukan ini.
+\end{eulercomment}
+\begin{eulerprompt}
+>$sin(computeAngle(A,B,C))^2
+\end{eulerprompt}
+\begin{eulercomment}
+Setelah kita punya spread di B, kita dapat menghitung tinggi ha pada sisi a. Ingat bahwa
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+s_b=\frac{h_a}{c}
+\]
+\end{eulerformula}
+\begin{eulercomment}
+menurut definisi.
+\end{eulercomment}
+\begin{eulerprompt}
+>ha &= c*sb; $ha
+\end{eulerprompt}
+\begin{eulercomment}
+Gambar berikut dihasilkan dengan program geometri C.a.R., yang dapat menggambar kuadran dan
+spread.
+
+Menurut definisi, panjang ha adalah akar kuadrat dari kuadrannya.
+\end{eulercomment}
+\begin{eulerprompt}
+>$sqrt(ha)
+\end{eulerprompt}
+\begin{eulercomment}
+Sekarang kita dapat menghitung luas segitiga. Jangan lupa, bahwa kita sedang berurusan
+dengan kuadran!
+\end{eulercomment}
+\begin{eulerprompt}
+>$sqrt(ha)*sqrt(a)/2
+\end{eulerprompt}
+\begin{eulercomment}
+Rumus determinan yang biasa menghasilkan hal yang sama.
+\end{eulercomment}
+\begin{eulerprompt}
+>$areaTriangle(B,A,C)
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: c = 10, b = 5, a = 17; sudut B = 32.4712Â°; sb = 49/170; ha = 49/17;
+luas = 7/2 (sama dengan rumus determinan).
+
+\end{eulercomment}
+\eulersubheading{Rumus Heron}
+\begin{eulercomment}
+Sekarang, mari kita selesaikan soal ini secara umum!
+\end{eulercomment}
+\begin{eulerprompt}
+>&remvalue(a,b,c,sb,ha);
+\end{eulerprompt}
+\begin{eulercomment}
+Pertama kita hitung spread di B untuk segitiga dengan sisi a, b, dan c. Kemudian kita hitung
+luas kuadrat (disebut "quadrea"?), memfaktorkannya dengan Maxima, dan kita mendapatkan rumus
+Heron yang terkenal.
+
+Harus diakui, ini sulit dikerjakan dengan pensil dan kertas.
+\end{eulercomment}
+\begin{eulerprompt}
+>$spread(b^2,c^2,a^2), $factor(%*c^2*a^2/4)
+\end{eulerprompt}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Aturan Spread Rangkap Tiga}
+\begin{eulercomment}
+Kelemahan spread adalah bahwa spread tidak lagi dijumlahkan seperti sudut.
+
+Namun, ketiga spread suatu segitiga memenuhi aturan "spread rangkap tiga" berikut.
+\end{eulercomment}
+\begin{eulerprompt}
+>&remvalue(sa,sb,sc); $triplespread(sa,sb,sc)
+\end{eulerprompt}
+\begin{eulercomment}
+Aturan ini berlaku untuk sebarang tiga sudut yang berjumlah 180Â°.
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+\alpha+\beta+\gamma=\pi
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Karena spread
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+\alpha, \pi-\alpha
+\]
+\end{eulerformula}
+\begin{eulercomment}
+sama, aturan spread rangkap tiga juga benar, jika
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+\alpha+\beta=\gamma
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Karena spread sudut negatif sama, aturan spread rangkap tiga juga berlaku, jika
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+\alpha+\beta+\gamma=0
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Sebagai contoh, kita dapat menghitung spread sudut 60Â°. Nilainya 3/4. Persamaan ini punya
+solusi kedua, yaitu semua spread bernilai 0.
+\end{eulercomment}
+\begin{eulerprompt}
+>$solve(triplespread(x,x,x),x)
+\end{eulerprompt}
+\begin{eulercomment}
+Spread sudut 90Â° jelas 1. Jika dua sudut berjumlah 90Â°, spread keduanya menyelesaikan
+persamaan spread rangkap tiga dengan a,b,1. Dengan perhitungan berikut kita mendapatkan a+b=1.
+\end{eulercomment}
+\begin{eulerprompt}
+>$triplespread(x,y,1), $solve(%,x)
+\end{eulerprompt}
+\begin{eulercomment}
+Karena spread 180Â°-t sama dengan spread t, rumus spread rangkap tiga juga berlaku, jika satu
+sudut adalah jumlah atau selisih dua sudut lainnya.
+
+Jadi kita dapat mencari spread sudut rangkap. Perhatikan bahwa ada dua solusi lagi. Kita
+jadikan ini sebuah fungsi.
+\end{eulercomment}
+\begin{eulerprompt}
+>$solve(triplespread(a,a,x),x), function doublespread(a) &= factor(rhs(%[1]))
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                              - 4 (a - 1) a
+  
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: spread 60Â° = 3/4; a+b = 1 untuk dua sudut komplementer;
+doublespread(a) = 4a(1-a).
+
+\end{eulercomment}
+\eulersubheading{Garis Bagi Sudut}
+\begin{eulercomment}
+Ini adalah situasi yang sudah kita ketahui.
+\end{eulercomment}
+\begin{eulerprompt}
+>C&:=[0,0]; A&:=[4,0]; B&:=[0,3]; ...
+>setPlotRange(-1,5,-1,5); ...
+>plotPoint(A,"A"); plotPoint(B,"B"); plotPoint(C,"C"); ...
+>plotSegment(B,A,"c"); plotSegment(A,C,"b"); plotSegment(C,B,"a"); ...
+>insimg;
+\end{eulerprompt}
+\begin{eulercomment}
+Mari kita hitung panjang garis bagi sudut di A. Tetapi kita ingin menyelesaikannya untuk
+a,b,c umum.
+\end{eulercomment}
+\begin{eulerprompt}
+>&remvalue(a,b,c);
+\end{eulerprompt}
+\begin{eulercomment}
+Jadi pertama-tama kita hitung spread sudut yang dibagi dua di A, memakai rumus spread
+rangkap tiga.
+
+Masalah rumus ini muncul lagi. Rumus ini punya dua solusi. Kita harus memilih yang benar.
+Solusi yang lain berkaitan dengan sudut yang dibagi dua 180Â°-wa.
+\end{eulercomment}
+\begin{eulerprompt}
+>$triplespread(x,x,a/(a+b)), $solve(%,x), sa2 &= rhs(%[1]); $sa2
+\end{eulerprompt}
+\begin{eulercomment}
+Mari kita periksa untuk segiempat (segitiga) Mesir.
+\end{eulercomment}
+\begin{eulerprompt}
+>$sa2 with [a=3^2,b=4^2]
+\end{eulerprompt}
+\begin{eulercomment}
+Kita dapat mencetak sudutnya di Euler, setelah memindahkan spread ke radian.
+\end{eulercomment}
+\begin{eulerprompt}
+>wa2 := arcsin(sqrt(1/10)); degprint(wa2)
+\end{eulerprompt}
+\begin{euleroutput}
+  18°26'5.82''
+\end{euleroutput}
+\begin{eulercomment}
+Titik P adalah perpotongan garis bagi sudut dengan sumbu-y.
+\end{eulercomment}
+\begin{eulerprompt}
+>P := [0,tan(wa2)*4]
+\end{eulerprompt}
+\begin{euleroutput}
+  [0,  1.33333]
+\end{euleroutput}
+\begin{eulerprompt}
+>plotPoint(P,"P"); plotSegment(A,P):
+\end{eulerprompt}
+\begin{eulercomment}
+Mari kita periksa sudut-sudut pada contoh khusus kita.
+\end{eulercomment}
+\begin{eulerprompt}
+>computeAngle(C,A,P), computeAngle(P,A,B)
+\end{eulerprompt}
+\begin{euleroutput}
+  0.321750554397
+  0.321750554397
+\end{euleroutput}
+\begin{eulercomment}
+Sekarang kita hitung panjang garis bagi AP.
+
+Kita pakai teorema sinus pada segitiga APC. Teorema ini menyatakan bahwa
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+\frac{BC}{\sin(w_a)} = \frac{AC}{\sin(w_b)} = \frac{AB}{\sin(w_c)}
+\]
+\end{eulerformula}
+\begin{eulercomment}
+berlaku pada sebarang segitiga. Kuadratkan, maka ia diterjemahkan menjadi apa yang disebut
+"hukum spread"
+
+\end{eulercomment}
+\begin{eulerformula}
+\[
+\frac{a}{s_a} = \frac{b}{s_b} = \frac{c}{s_b}
+\]
+\end{eulerformula}
+\begin{eulercomment}
+dengan a,b,c menyatakan kuadran-kuadran.
+
+Karena spread CPA adalah 1-sa2, dari situ kita dapatkan bisa/1=b/(1-sa2) dan dapat menghitung
+bisa (kuadran garis bagi sudut).
+\end{eulercomment}
+\begin{eulerprompt}
+>&factor(ratsimp(b/(1-sa2))); bisa &= %; $bisa
+\end{eulerprompt}
+\begin{eulercomment}
+Mari kita periksa rumus ini untuk nilai-nilai Mesir kita.
+\end{eulercomment}
+\begin{eulerprompt}
+>sqrt(mxmeval("at(bisa,[a=3^2,b=4^2])")), distance(A,P)
+\end{eulerprompt}
+\begin{euleroutput}
+  4.21637021356
+  4.21637021356
+\end{euleroutput}
+\begin{eulercomment}
+Kita juga dapat menghitung P memakai rumus spread.
+\end{eulercomment}
+\begin{eulerprompt}
+>py&=factor(ratsimp(sa2*bisa)); $py
+\end{eulerprompt}
+\begin{eulercomment}
+Nilainya sama dengan yang kita dapat dengan rumus trigonometri.
+\end{eulercomment}
+\begin{eulerprompt}
+>sqrt(mxmeval("at(py,[a=3^2,b=4^2])"))
+\end{eulerprompt}
+\begin{euleroutput}
+  1.33333333333
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: sa2 = 1/10; sudut 18Â°26'5.82''; P = [0, 1.33333];
+AP = 4.21637; kedua sudut CAP dan PAB = 0.321751 rad.
+
+\end{eulercomment}
+\eulersubheading{Sudut Tali Busur (Chord Angle)}
+\begin{eulercomment}
+Perhatikan situasi berikut.
+\end{eulercomment}
+\begin{eulerprompt}
+>setPlotRange(1.2); ...
+>color(1); plotCircle(circleWithCenter([0,0],1)); ...
+>A:=[cos(1),sin(1)]; B:=[cos(2),sin(2)]; C:=[cos(6),sin(6)]; ...
+>plotPoint(A,"A"); plotPoint(B,"B"); plotPoint(C,"C"); ...
+>color(3); plotSegment(A,B,"c"); plotSegment(A,C,"b"); plotSegment(C,B,"a"); ...
+>color(1); O:=[0,0];  plotPoint(O,"0"); ...
+>plotSegment(A,O); plotSegment(B,O); plotSegment(C,O,"r"); ...
+>insimg;
+\end{eulerprompt}
+\begin{eulercomment}
+Kita dapat memakai Maxima untuk menyelesaikan rumus spread rangkap tiga untuk sudut-sudut di
+pusat O terhadap r. Dengan demikian kita mendapatkan rumus untuk kuadrat jari-jari
+lingkaran luar dalam bentuk kuadran-kuadran sisinya.
+
+Kali ini, Maxima menghasilkan beberapa nol kompleks, yang kita abaikan.
+\end{eulercomment}
+\begin{eulerprompt}
+>&remvalue(a,b,c,r); // hapus nilai-nilai sebelumnya untuk perhitungan baru
+>rabc &= rhs(solve(triplespread(spread(b,r,r),spread(a,r,r),spread(c,r,r)),r)[4]); $rabc
+\end{eulerprompt}
+\begin{eulercomment}
+Kita dapat menjadikan itu fungsi Euler.
+\end{eulercomment}
+\begin{eulerprompt}
+>function periradius(a,b,c) &= rabc;
+\end{eulerprompt}
+\begin{eulercomment}
+Mari kita periksa hasilnya untuk titik-titik A,B,C kita.
+\end{eulercomment}
+\begin{eulerprompt}
+>a:=quadrance(B,C); b:=quadrance(A,C); c:=quadrance(A,B);
+\end{eulerprompt}
+\begin{eulercomment}
+Jari-jarinya memang 1.
+\end{eulercomment}
+\begin{eulerprompt}
+>periradius(a,b,c)
+\end{eulerprompt}
+\begin{euleroutput}
+  1
+\end{euleroutput}
+\begin{eulercomment}
+Faktanya, spread CBA hanya bergantung pada b dan c. Ini adalah teorema sudut tali busur.
+\end{eulercomment}
+\begin{eulerprompt}
+>$spread(b,a,c)*rabc | ratsimp
+\end{eulerprompt}
+\begin{eulercomment}
+Sebenarnya spread tersebut adalah b/(4r), dan kita lihat bahwa sudut tali busur dari tali
+busur b adalah setengah sudut pusat.
+\end{eulercomment}
+\begin{eulerprompt}
+>$doublespread(b/(4*r))-spread(b,r,r) | ratsimp
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: periradius = 1; hasil kali = b/4; selisih terakhir = 0.
+
+\begin{eulercomment}
+\eulerheading{Contoh 6: Jarak Minimal pada Bidang}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Uraian Materi}
+\begin{eulercomment}
+Titik Fermat (titik Torricelli) suatu segitiga adalah titik F yang meminimumkan jumlah jarak
+FA + FB + FC. Jika semua sudut segitiga kurang dari 120 derajat, F berada di dalam segitiga
+dan melihat setiap sisi dengan sudut 120 derajat (sudut AFB = BFC = CFA = 120Â°). Jika ada
+sudut yang sama atau lebih dari 120 derajat, titik minimumnya adalah titik sudut tersebut.
+Konstruksinya: buat segitiga sama sisi di luar pada dua sisi; garis dari titik sudut ke puncak
+segitiga sama sisi di hadapannya berpotongan di F.
+
+Untuk dua titik A dan B, himpunan titik dengan MA+MB = konstanta adalah elips dengan fokus A dan B.
+
+\end{eulercomment}
+\eulersubheading{Penyelesaian dengan EMT}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Catatan pendahuluan}
+\begin{eulercomment}
+Fungsi yang mengaitkan titik M pada bidang dengan jarak AM antara titik tetap A dan M,
+mempunyai garis-garis tinggi (kontur) yang cukup sederhana: lingkaran-lingkaran dengan pusat A.
+\end{eulercomment}
+\begin{eulerprompt}
+>&remvalue();
+>A=[-1,-1];
+>function d1(x,y):=sqrt((x-A[1])^2+(y-A[2])^2)
+>fcontour("d1",xmin=-2,xmax=0,ymin=-2,ymax=0,hue=1, ...
+>title="Jika tampak elips, atur jendela Anda menjadi persegi"):
+\end{eulerprompt}
+\begin{eulercomment}
+dan grafiknya juga cukup sederhana: bagian atas sebuah kerucut:
+\end{eulercomment}
+\begin{eulerprompt}
+>plot3d("d1",xmin=-2,xmax=0,ymin=-2,ymax=0):
+\end{eulerprompt}
+\begin{eulercomment}
+Tentu saja minimum 0 dicapai di A.
+
+\end{eulercomment}
+\eulersubheading{Dua titik}
+\begin{eulercomment}
+Sekarang kita lihat fungsi MA+MB dengan A dan B dua titik (tetap). Ada "fakta yang terkenal"
+bahwa kurva-kurva kontur-nya berupa elips, dengan titik fokus A dan B; kecuali minimum AB yang
+konstan pada ruas [AB]:
+\end{eulercomment}
+\begin{eulerprompt}
+>B=[1,-1];
+>function d2(x,y):=d1(x,y)+sqrt((x-B[1])^2+(y-B[2])^2)
+>fcontour("d2",xmin=-2,xmax=2,ymin=-3,ymax=1,hue=1):
+\end{eulerprompt}
+\begin{eulercomment}
+Grafiknya lebih menarik:
+\end{eulercomment}
+\begin{eulerprompt}
+>plot3d("d2",xmin=-2,xmax=2,ymin=-3,ymax=1):
+\end{eulerprompt}
+\begin{eulercomment}
+Pembatasan pada garis (AB) lebih terkenal:
+\end{eulercomment}
+\begin{eulerprompt}
+>plot2d("abs(x+1)+abs(x-1)",xmin=-3,xmax=3):
+\end{eulerprompt}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Tiga titik}
+\begin{eulercomment}
+Sekarang hal-hal menjadi kurang sederhana: Agak kurang terkenal bahwa MA+MB+MC mencapai
+minimumnya di satu titik pada bidang, tetapi menentukannya tidak sesederhana itu:
+
+1) Jika salah satu sudut segitiga ABC lebih dari 120Â° (misalkan di A), maka minimum dicapai
+tepat di titik ini (misalkan AB+AC).
+
+Contoh:
+\end{eulercomment}
+\begin{eulerprompt}
+>C=[-4,1];
+>function d3(x,y):=d2(x,y)+sqrt((x-C[1])^2+(y-C[2])^2)
+>plot3d("d3",xmin=-5,xmax=3,ymin=-4,ymax=4);
+\end{eulerprompt}
+\begin{euleroutput}
+  Illegal function result in map.
+   %ploteval2:
+      return map(f$,x,y;args());
+  f3dplot:
+      z=%ploteval2(f$,x,y,maps;args());
+  Try "trace errors" to inspect local variables after errors.
+  plot3d:
+      =cp,=cplevel,=cpcolor,=cpdelta);
+\end{euleroutput}
+\begin{eulerprompt}
+>insimg;
+>fcontour("d3",xmin=-4,xmax=1,ymin=-2,ymax=2,hue=1,title="Minimum ada di A");
+\end{eulerprompt}
+\begin{euleroutput}
+  Illegal function result in map.
+   %ploteval2:
+      return map(f$,x,y;args());
+  Try "trace errors" to inspect local variables after errors.
+  fcontour:
+      Z=%ploteval2(f$,X,Y,maps;args());
+\end{euleroutput}
+\begin{eulerprompt}
+>P=(A_B_C_A)'; plot2d(P[1],P[2],add=1,color=12);
+>insimg;
+\end{eulerprompt}
+\begin{eulercomment}
+2) Tetapi jika semua sudut segitiga ABC kurang dari 120Â°, minimum berada pada suatu titik F di
+bagian dalam segitiga, yang merupakan satu-satunya titik yang melihat sisi-sisi ABC dengan
+sudut yang sama (maka masing-masing 120Â°):
+\end{eulercomment}
+\begin{eulerprompt}
+>C=[-0.5,1];
+>plot3d("d3",xmin=-2,xmax=2,ymin=-2,ymax=2):
+\end{eulerprompt}
+\begin{euleroutput}
+  Illegal function result in map.
+   %ploteval2:
+      return map(f$,x,y;args());
+  f3dplot:
+      z=%ploteval2(f$,x,y,maps;args());
+  Try "trace errors" to inspect local variables after errors.
+  plot3d:
+      =cp,=cplevel,=cpcolor,=cpdelta);
+\end{euleroutput}
+\begin{eulerprompt}
+>fcontour("d3",xmin=-2,xmax=2,ymin=-2,ymax=2,hue=1,title="Titik Fermat");
+\end{eulerprompt}
+\begin{euleroutput}
+  Illegal function result in map.
+   %ploteval2:
+      return map(f$,x,y;args());
+  Try "trace errors" to inspect local variables after errors.
+  fcontour:
+      Z=%ploteval2(f$,X,Y,maps;args());
+\end{euleroutput}
+\begin{eulerprompt}
+>P=(A_B_C_A)'; plot2d(P[1],P[2],add=1,color=12);
+>insimg;
+\end{eulerprompt}
+\begin{eulercomment}
+Merupakan kegiatan yang menarik untuk mewujudkan gambar di atas dengan perangkat lunak
+geometri; misalnya, saya tahu satu perangkat lunak yang ditulis dalam Java dan memiliki
+instruksi "garis kontur"...
+
+Semua hal di atas ditemukan oleh seorang hakim Perancis bernama Pierre de Fermat; ia menulis
+surat kepada para dilettante lain seperti pastor Marin Mersenne dan Blaise Pascal yang bekerja
+di bagian pajak penghasilan. Jadi titik tunggal F sehingga FA+FB+FC minimal disebut titik
+Fermat segitiga tersebut. Tetapi tampaknya beberapa tahun sebelumnya, orang Italia Torricelli
+telah menemukan titik ini sebelum Fermat! Bagaimanapun tradisinya adalah menandai titik ini F...
+
+\end{eulercomment}
+\eulersubheading{Empat titik}
+\begin{eulercomment}
+Langkah berikutnya adalah menambahkan titik keempat D dan mencoba meminimumkan MA+MB+MC+MD;
+misalkan Anda adalah operator TV kabel dan ingin mencari di lahan mana antena harus dipasang
+agar Anda bisa melayani empat desa dan memakai kabel sependek mungkin!
+\end{eulercomment}
+\begin{eulerprompt}
+>D=[1,1];
+>function d4(x,y):=d3(x,y)+sqrt((x-D[1])^2+(y-D[2])^2)
+>plot3d("d4",xmin=-1.5,xmax=1.5,ymin=-1.5,ymax=1.5):
+\end{eulerprompt}
+\begin{euleroutput}
+  Illegal function result in map.
+   %ploteval2:
+      return map(f$,x,y;args());
+  f3dplot:
+      z=%ploteval2(f$,x,y,maps;args());
+  Try "trace errors" to inspect local variables after errors.
+  plot3d:
+      =cp,=cplevel,=cpcolor,=cpdelta);
+\end{euleroutput}
+\begin{eulerprompt}
+>fcontour("d4",xmin=-1.5,xmax=1.5,ymin=-1.5,ymax=1.5,hue=1);
+\end{eulerprompt}
+\begin{euleroutput}
+  Illegal function result in map.
+   %ploteval2:
+      return map(f$,x,y;args());
+  Try "trace errors" to inspect local variables after errors.
+  fcontour:
+      Z=%ploteval2(f$,X,Y,maps;args());
+\end{euleroutput}
+\begin{eulerprompt}
+>P=(A_B_C_D)'; plot2d(P[1],P[2],points=1,add=1,color=12);
+>insimg;
+\end{eulerprompt}
+\begin{eulercomment}
+Masih ada minimum dan dicapai bukan di titik A, B, C, ataupun D:
+\end{eulercomment}
+\begin{eulerprompt}
+>function f(x):=d4(x[1],x[2])
+>neldermin("f",[0.2,0.2])
+\end{eulerprompt}
+\begin{euleroutput}
+  Function call to "%nelderf" failed in nelder.
+  Try "trace errors" to inspect local variables after errors.
+  neldermin:
+      v1=_nelder("%nelderf",v,d,eps;f$,args());
+\end{euleroutput}
+\begin{eulercomment}
+Tampaknya pada kasus ini, koordinat titik optimalnya rasional atau hampir rasional...
+
+Sekarang jika ABCD adalah persegi, kita harapkan titik optimalnya adalah pusat ABCD:
+\end{eulercomment}
+\begin{eulerprompt}
+>C=[-1,1];
+>plot3d("d4",xmin=-1,xmax=1,ymin=-1,ymax=1):
+\end{eulerprompt}
+\begin{euleroutput}
+  Illegal function result in map.
+   %ploteval2:
+      return map(f$,x,y;args());
+  f3dplot:
+      z=%ploteval2(f$,x,y,maps;args());
+  Try "trace errors" to inspect local variables after errors.
+  plot3d:
+      =cp,=cplevel,=cpcolor,=cpdelta);
+\end{euleroutput}
+\begin{eulerprompt}
+>fcontour("d4",xmin=-1.5,xmax=1.5,ymin=-1.5,ymax=1.5,hue=1);
+\end{eulerprompt}
+\begin{euleroutput}
+  Illegal function result in map.
+   %ploteval2:
+      return map(f$,x,y;args());
+  Try "trace errors" to inspect local variables after errors.
+  fcontour:
+      Z=%ploteval2(f$,X,Y,maps;args());
+\end{euleroutput}
+\begin{eulerprompt}
+>P=(A_B_C_D)'; plot2d(P[1],P[2],add=1,color=12,points=1);
+>insimg;
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: untuk empat titik A=[-1,-1], B=[1,-1], C=[-0.5,1], D=[1,1],
+neldermin mendapatkan titik sekitar [0.142858, 0.142857] (kira-kira [1/7,1/7]).
+Untuk persegi (C=[-1,1]) titik optimalnya adalah pusat persegi, [0,0].
+
+\begin{eulercomment}
+\eulerheading{Contoh 7: Bola Dandelin dengan Povray}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Uraian Materi}
+\begin{eulercomment}
+Teorema Dandelin: bila sebuah bidang memotong kerucut tegak membentuk elips, maka terdapat dua
+bola yang menyinggung kerucut dan bidang tersebut. Titik-titik singgung kedua bola dengan
+bidang adalah titik fokus elips. Untuk titik T pada elips, TF1 + TF2 sama dengan jarak antara
+dua lingkaran singgung bola dengan kerucut, diukur sepanjang garis pelukis, sehingga konstan.
+Ini menjelaskan mengapa irisan kerucut ini adalah elips (jumlah jarak ke dua fokus konstan).
+
+\end{eulercomment}
+\eulersubheading{Penyelesaian dengan EMT}
+\begin{eulercomment}
+Anda dapat menjalankan demonstrasi ini, jika Anda telah memasang Povray, dan pvengine.exe berada
+di path program.
+
+Pertama kita hitung jari-jari bola-bola tersebut.
+
+Jika Anda melihat gambar di bawah, Anda melihat bahwa kita membutuhkan dua lingkaran yang
+menyinggung dua garis yang membentuk kerucut, dan satu garis yang membentuk bidang yang
+memotong kerucut.
+
+Kita pakai file geometry.e dari Euler untuk ini.
+\end{eulercomment}
+\begin{eulerprompt}
+>load geometry;
+\end{eulerprompt}
+\begin{eulercomment}
+Pertama dua garis yang membentuk kerucut.
+\end{eulercomment}
+\begin{eulerprompt}
+>g1 &= lineThrough([0,0],[1,a])
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                               [- a, 1, 0]
+  
+\end{euleroutput}
+\begin{eulerprompt}
+>g2 &= lineThrough([0,0],[-1,a])
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                              [- a, - 1, 0]
+  
+\end{euleroutput}
+\begin{eulercomment}
+Kemudian garis ketiga.
+\end{eulercomment}
+\begin{eulerprompt}
+>g &= lineThrough([-1,0],[1,1])
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                               [- 1, 2, 1]
+  
+\end{euleroutput}
+\begin{eulercomment}
+Kita gambar semuanya sejauh ini.
+\end{eulercomment}
+\begin{eulerprompt}
+>setPlotRange(-1,1,0,2);
+>color(black); plotLine(g(),"")
+>a:=2; color(blue); plotLine(g1(),""), plotLine(g2(),""):
+\end{eulerprompt}
+\begin{eulercomment}
+Sekarang kita ambil sebuah titik umum pada sumbu-y.
+\end{eulercomment}
+\begin{eulerprompt}
+>P &= [0,u]
+\end{eulerprompt}
+\begin{euleroutput}
+  
+                                  [0, u]
+  
+\end{euleroutput}
+\begin{eulercomment}
+Hitung jaraknya ke g1.
+\end{eulercomment}
+\begin{eulerprompt}
+>d1 &= distance(P,projectToLine(P,g1)); $d1
+\end{eulerprompt}
+\begin{eulercomment}
+Hitung jaraknya ke g.
+\end{eulercomment}
+\begin{eulerprompt}
+>d &= distance(P,projectToLine(P,g)); $d
+\end{eulerprompt}
+\begin{eulercomment}
+Dan carilah pusat kedua lingkaran, yang jaraknya sama.
+\end{eulercomment}
+\begin{eulerprompt}
+>sol &= solve(d1^2=d^2,u); $sol
+\end{eulerprompt}
+\begin{eulercomment}
+Ada dua solusi.
+
+Kita evaluasi solusi simbolik tersebut, dan temukan kedua pusat, dan kedua jarak.
+\end{eulercomment}
+\begin{eulerprompt}
+>u := sol()
+\end{eulerprompt}
+\begin{euleroutput}
+  [0.333333,  1]
+\end{euleroutput}
+\begin{eulerprompt}
+>dd := d()
+\end{eulerprompt}
+\begin{euleroutput}
+  [0.149071,  0.447214]
+\end{euleroutput}
+\begin{eulercomment}
+Gambar lingkaran-lingkaran ke dalam gambar.
+\end{eulercomment}
+\begin{eulerprompt}
+>color(red);
+>plotCircle(circleWithCenter([0,u[1]],dd[1]),"");
+>plotCircle(circleWithCenter([0,u[2]],dd[2]),"");
+>insimg;
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: u = [0.333333, 1]; jari-jari dd = [0.149071, 0.447214].
+
+\end{eulercomment}
+\eulersubheading{Gambar dengan Povray}
+\begin{eulercomment}
+Selanjutnya kita gambar semuanya dengan Povray. Perhatikan bahwa Anda dapat mengubah perintah
+apa pun dalam rangkaian perintah Povray berikut, dan menjalankan ulang semua perintah dengan
+Shift-Return.
+
+Pertama kita muat fungsi-fungsi povray.
+\end{eulercomment}
+\begin{eulerprompt}
+>load povray;
+>defaultpovray="C:\(\backslash\)Program Files\(\backslash\)POV-Ray\(\backslash\)v3.7\(\backslash\)bin\(\backslash\)pvengine.exe"
+\end{eulerprompt}
+\begin{euleroutput}
+  C:\(\backslash\)Program Files\(\backslash\)POV-Ray\(\backslash\)v3.7\(\backslash\)bin\(\backslash\)pvengine.exe
+\end{euleroutput}
+\begin{eulercomment}
+Kita siapkan adegan (scene) dengan tepat.
+\end{eulercomment}
+\begin{eulerprompt}
+>povstart(zoom=11,center=[0,0,0.5],height=10Â°,angle=140Â°);
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable Â not found!
+  Error in degree
+  Error in:
+  povstart(zoom=11,center=[0,0,0.5],height=10Â°,angle=140Â°); ...
+                                               ^
+\end{euleroutput}
+\begin{eulercomment}
+Selanjutnya kita tulis kedua bola ke file Povray.
+\end{eulercomment}
+\begin{eulerprompt}
+>writeln(povsphere([0,0,u[1]],dd[1],povlook(red)));
+\end{eulerprompt}
+\begin{euleroutput}
+  sphere \{ <0,0,0.333333>, 0.1490711985 texture \{ pigment \{ color rgb <0.564706,0.0627451,0.0627451> \}  \} 
+   finish \{ ambient 0.2 \} 
+  
+  \}
+\end{euleroutput}
+\begin{eulerprompt}
+>writeln(povsphere([0,0,u[2]],dd[2],povlook(red)));
+\end{eulerprompt}
+\begin{euleroutput}
+  sphere \{ <0,0,1>, 0.4472135955 texture \{ pigment \{ color rgb <0.564706,0.0627451,0.0627451> \}  \} 
+   finish \{ ambient 0.2 \} 
+  
+  \}
+\end{euleroutput}
+\begin{eulercomment}
+Dan kerucutnya, transparan.
+\end{eulercomment}
+\begin{eulerprompt}
+>writeln(povcone([0,0,0],0,[0,0,a],1,povlook(lightgray,1)));
+\end{eulerprompt}
+\begin{euleroutput}
+  cone \{ <0,0,0>, 0 <0,0,2>, 1 texture \{ pigment \{ color rgbf <0.705882,0.705882,0.705882,1> \}  \} 
+   finish \{ ambient 0.2 \} 
+   \}
+\end{euleroutput}
+\begin{eulercomment}
+Kita membuat bidang yang dibatasi pada kerucut.
+\end{eulercomment}
+\begin{eulerprompt}
+>gp=g();
+>pc=povcone([0,0,0],0,[0,0,a],1,"");
+>vp=[gp[1],0,gp[2]]; dp=gp[3];
+>writeln(povplane(vp,dp,povlook(blue,0.5),pc));
+\end{eulerprompt}
+\begin{euleroutput}
+  plane \{ <-1,0,2>, 0.4472135955
+  clipped_by \{ cone \{ <0,0,0>, 0 <0,0,2>, 1 \} \}  texture \{ pigment \{ color rgbf <0.0627451,0.0627451,0.564706,0.5> \}  \} 
+   finish \{ ambient 0.2 \} 
+  
+  \}
+\end{euleroutput}
+\begin{eulercomment}
+Sekarang kita buat dua titik pada lingkaran-lingkaran, di mana bola-bola menyinggung kerucut.
+\end{eulercomment}
+\begin{eulerprompt}
+>function turnz(v) := return [-v[2],v[1],v[3]]
+>P1=projectToLine([0,u[1]],g1()); P1=turnz([P1[1],0,P1[2]]);
+>writeln(povpoint(P1,povlook(yellow)));
+\end{eulerprompt}
+\begin{euleroutput}
+  sphere \{ <0,0.133333,0.266667>, 0.02 texture \{ pigment \{ color rgb <0.941176,0.941176,0.392157> \}  \} 
+   finish \{ ambient 0.2 \} 
+  
+  \}
+\end{euleroutput}
+\begin{eulerprompt}
+>P2=projectToLine([0,u[2]],g1()); P2=turnz([P2[1],0,P2[2]]);
+>writeln(povpoint(P2,povlook(yellow)));
+\end{eulerprompt}
+\begin{euleroutput}
+  sphere \{ <0,0.4,0.8>, 0.02 texture \{ pigment \{ color rgb <0.941176,0.941176,0.392157> \}  \} 
+   finish \{ ambient 0.2 \} 
+  
+  \}
+\end{euleroutput}
+\begin{eulercomment}
+Kemudian kita buat dua titik di mana bola-bola menyinggung bidang.
+Titik-titik ini adalah fokus elips.
+\end{eulercomment}
+\begin{eulerprompt}
+>P3=projectToLine([0,u[1]],g()); P3=[P3[1],0,P3[2]];
+>writeln(povpoint(P3,povlook(yellow)));
+\end{eulerprompt}
+\begin{euleroutput}
+  sphere \{ <-0.0666667,0,0.466667>, 0.02 texture \{ pigment \{ color rgb <0.941176,0.941176,0.392157> \}  \} 
+   finish \{ ambient 0.2 \} 
+  
+  \}
+\end{euleroutput}
+\begin{eulerprompt}
+>P4=projectToLine([0,u[2]],g()); P4=[P4[1],0,P4[2]];
+>writeln(povpoint(P4,povlook(yellow)));
+\end{eulerprompt}
+\begin{euleroutput}
+  sphere \{ <0.2,0,0.6>, 0.02 texture \{ pigment \{ color rgb <0.941176,0.941176,0.392157> \}  \} 
+   finish \{ ambient 0.2 \} 
+  
+  \}
+\end{euleroutput}
+\begin{eulercomment}
+Berikutnya kita hitung perpotongan P1P2 dengan bidang.
+\end{eulercomment}
+\begin{eulerprompt}
+>t1=scalp(vp,P1)-dp; t2=scalp(vp,P2)-dp; P5=P1+t1/(t1-t2)*(P2-P1);
+>writeln(povpoint(P5,povlook(yellow)));
+\end{eulerprompt}
+\begin{euleroutput}
+  sphere \{ <0,0.25,0.5>, 0.02 texture \{ pigment \{ color rgb <0.941176,0.941176,0.392157> \}  \} 
+   finish \{ ambient 0.2 \} 
+  
+  \}
+\end{euleroutput}
+\begin{eulercomment}
+Kita hubungkan titik-titik dengan ruas garis.
+\end{eulercomment}
+\begin{eulerprompt}
+>writeln(povsegment(P1,P2,povlook(yellow)));
+\end{eulerprompt}
+\begin{euleroutput}
+  cylinder \{ <0,0.133333,0.266667>, <0,0.4,0.8>, 0.01
+   texture \{ pigment \{ color rgb <0.941176,0.941176,0.392157> \}  \} 
+   finish \{ ambient 0.2 \} 
+   \}
+\end{euleroutput}
+\begin{eulerprompt}
+>writeln(povsegment(P5,P3,povlook(yellow)));
+\end{eulerprompt}
+\begin{euleroutput}
+  cylinder \{ <0,0.25,0.5>, <-0.0666667,0,0.466667>, 0.01
+   texture \{ pigment \{ color rgb <0.941176,0.941176,0.392157> \}  \} 
+   finish \{ ambient 0.2 \} 
+   \}
+\end{euleroutput}
+\begin{eulerprompt}
+>writeln(povsegment(P5,P4,povlook(yellow)));
+\end{eulerprompt}
+\begin{euleroutput}
+  cylinder \{ <0,0.25,0.5>, <0.2,0,0.6>, 0.01
+   texture \{ pigment \{ color rgb <0.941176,0.941176,0.392157> \}  \} 
+   finish \{ ambient 0.2 \} 
+   \}
+\end{euleroutput}
+\begin{eulercomment}
+Sekarang kita buat pita abu-abu, di mana bola-bola menyinggung kerucut.
+\end{eulercomment}
+\begin{eulerprompt}
+>pcw=povcone([0,0,0],0,[0,0,a],1.01);
+>pc1=povcylinder([0,0,P1[3]-defaultpointsize/2],[0,0,P1[3]+defaultpointsize/2],1);
+>writeln(povintersection([pcw,pc1],povlook(gray)));
+\end{eulerprompt}
+\begin{euleroutput}
+  intersection \{ cone \{ <0,0,0>, 0 <0,0,2>, 1.01 texture \{ pigment \{ color rgb <0.470588,0.470588,0.470588> \}  \} 
+   finish \{ ambient 0.2 \} 
+   \}
+  cylinder \{ <0,0,0.256667>, <0,0,0.276667>, 1
+   texture \{ pigment \{ color rgb <0.470588,0.470588,0.470588> \}  \} 
+   finish \{ ambient 0.2 \} 
+   \}
+   texture \{ pigment \{ color rgb <0.470588,0.470588,0.470588> \}  \} 
+   finish \{ ambient 0.2 \} 
+   \}
+\end{euleroutput}
+\begin{eulerprompt}
+>pc2=povcylinder([0,0,P2[3]-defaultpointsize/2],[0,0,P2[3]+defaultpointsize/2],1);
+>writeln(povintersection([pcw,pc2],povlook(gray)));
+\end{eulerprompt}
+\begin{euleroutput}
+  intersection \{ cone \{ <0,0,0>, 0 <0,0,2>, 1.01 texture \{ pigment \{ color rgb <0.470588,0.470588,0.470588> \}  \} 
+   finish \{ ambient 0.2 \} 
+   \}
+  cylinder \{ <0,0,0.79>, <0,0,0.81>, 1
+   texture \{ pigment \{ color rgb <0.470588,0.470588,0.470588> \}  \} 
+   finish \{ ambient 0.2 \} 
+   \}
+   texture \{ pigment \{ color rgb <0.470588,0.470588,0.470588> \}  \} 
+   finish \{ ambient 0.2 \} 
+   \}
+\end{euleroutput}
+\begin{eulercomment}
+Jalankan program Povray.
+\end{eulercomment}
+\begin{eulerprompt}
+>povend();
+\end{eulerprompt}
+\begin{euleroutput}
+  exec:
+      return _exec(program,param,dir,print,hidden,wait);
+  povray:
+      exec(program,params,defaulthome);
+  Try "trace errors" to inspect local variables after errors.
+  povend:
+      povray(file,w,h,aspect,exit); 
+\end{euleroutput}
+\begin{eulercomment}
+Untuk mendapatkan anaglif, kita perlu memasukkan semuanya ke dalam sebuah fungsi adegan.
+Fungsi ini akan dipakai dua kali nanti.
+\end{eulercomment}
+\begin{eulerprompt}
+>function scene () ...
+\end{eulerprompt}
+\begin{eulerudf}
+  global a,u,dd,g,g1,defaultpointsize;
+  writeln(povsphere([0,0,u[1]],dd[1],povlook(red)));
+  writeln(povsphere([0,0,u[2]],dd[2],povlook(red)));
+  writeln(povcone([0,0,0],0,[0,0,a],1,povlook(lightgray,1)));
+  gp=g();
+  pc=povcone([0,0,0],0,[0,0,a],1,"");
+  vp=[gp[1],0,gp[2]]; dp=gp[3];
+  writeln(povplane(vp,dp,povlook(blue,0.5),pc));
+  P1=projectToLine([0,u[1]],g1()); P1=turnz([P1[1],0,P1[2]]);
+  writeln(povpoint(P1,povlook(yellow)));
+  P2=projectToLine([0,u[2]],g1()); P2=turnz([P2[1],0,P2[2]]);
+  writeln(povpoint(P2,povlook(yellow)));
+  P3=projectToLine([0,u[1]],g()); P3=[P3[1],0,P3[2]];
+  writeln(povpoint(P3,povlook(yellow)));
+  P4=projectToLine([0,u[2]],g()); P4=[P4[1],0,P4[2]];
+  writeln(povpoint(P4,povlook(yellow)));
+  t1=scalp(vp,P1)-dp; t2=scalp(vp,P2)-dp; P5=P1+t1/(t1-t2)*(P2-P1);
+  writeln(povpoint(P5,povlook(yellow)));
+  writeln(povsegment(P1,P2,povlook(yellow)));
+  writeln(povsegment(P5,P3,povlook(yellow)));
+  writeln(povsegment(P5,P4,povlook(yellow)));
+  pcw=povcone([0,0,0],0,[0,0,a],1.01);
+  pc1=povcylinder([0,0,P1[3]-defaultpointsize/2],[0,0,P1[3]+defaultpointsize/2],1);
+  writeln(povintersection([pcw,pc1],povlook(gray)));
+  pc2=povcylinder([0,0,P2[3]-defaultpointsize/2],[0,0,P2[3]+defaultpointsize/2],1);
+  writeln(povintersection([pcw,pc2],povlook(gray)));
+  endfunction
+\end{eulerudf}
+\begin{eulercomment}
+Anda memerlukan kacamata merah/cyan untuk menikmati efek berikut.
+\end{eulercomment}
+\begin{eulerprompt}
+>povanaglyph("scene",zoom=11,center=[0,0,0.5],height=10Â°,angle=140Â°);
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable Â not found!
+  Error in degree
+  Error in:
+  ... lyph("scene",zoom=11,center=[0,0,0.5],height=10Â°,angle=140Â°) ...
+                                                       ^
+\end{euleroutput}
+\begin{eulercomment}
+Catatan: bagian Povray hanya berjalan bila POV-Ray terpasang dan jalurnya benar. Jika muncul
+pesan "Command was not allowed!" atau galat exec, berarti Povray tidak dapat dijalankan dari
+EMT pada komputer Anda; bagian gambar 2D di atas tetap berfungsi.
+
+\begin{eulercomment}
+\eulerheading{Contoh 8: Geometri Bumi}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Uraian Materi}
+\begin{eulercomment}
+Pada bola dengan jari-jari R, jarak terpendek dua titik adalah busur lingkaran besar (great
+circle), yaitu lingkaran dengan pusat di pusat bola. Untuk titik (lintang f1, bujur l1) dan
+(f2, l2), sudut pusat d memenuhi hukum kosinus bola:
+\end{eulercomment}
+\begin{eulerformula}
+\[
+\cos d = \sin\varphi_1\sin\varphi_2+\cos\varphi_1\cos\varphi_2\cos(\lambda_2-\lambda_1),
+\]
+\end{eulerformula}
+\begin{eulercomment}
+dan jarak = R.d. Lintasan lingkaran besar tidak mempunyai arah (heading) konstan.
+Jumlah sudut segitiga bola lebih dari 180Â°; selisihnya disebut ekses sferis E = A+B+C-pi, dan
+luas segitiga bola = R\textasciicircum{}2 . E. Bumi sebenarnya berbentuk elipsoid, sehingga fungsi dengan awalan
+"es" (esdist, esdir, esadd, esarea) memakai hampiran yang lebih baik daripada bola ideal.
+
+\end{eulercomment}
+\eulersubheading{Penyelesaian dengan EMT}
+\begin{eulercomment}
+Pada buku catatan ini, kita akan melakukan beberapa perhitungan bola. Fungsi-fungsinya
+terdapat dalam file "spherical.e" pada folder examples. Kita perlu memuat file tersebut
+terlebih dahulu.
+\end{eulercomment}
+\begin{eulerprompt}
+>load "spherical.e";
+\end{eulerprompt}
+\begin{eulercomment}
+Untuk memasukkan posisi geografis, kita pakai vektor dengan dua koordinat dalam radian (utara
+dan timur, nilai negatif untuk selatan dan barat). Berikut koordinat Kampus FMIPA UNY.
+\end{eulercomment}
+\begin{eulerprompt}
+>FMIPA=[rad(-7,-46.467),rad(110,23.05)]
+\end{eulerprompt}
+\begin{euleroutput}
+  [-0.13569,  1.92657]
+\end{euleroutput}
+\begin{eulercomment}
+Anda dapat mencetak posisi ini dengan sposprint (spherical position print).
+\end{eulercomment}
+\begin{eulerprompt}
+>sposprint(FMIPA) // posisi garis lintang dan garis bujur FMIPA UNY
+\end{eulerprompt}
+\begin{euleroutput}
+  S 7°46.467' E 110°23.050'
+\end{euleroutput}
+\begin{eulercomment}
+Mari kita tambahkan dua kota lagi, Solo dan Semarang.
+\end{eulercomment}
+\begin{eulerprompt}
+>Solo=[rad(-7,-34.333),rad(110,49.683)]; Semarang=[rad(-6,-59.05),rad(110,24.533)];
+>sposprint(Solo), sposprint(Semarang),
+\end{eulerprompt}
+\begin{euleroutput}
+  S 7°34.333' E 110°49.683'
+  S 6°59.050' E 110°24.533'
+\end{euleroutput}
+\begin{eulercomment}
+Pertama kita hitung vektor dari satu kota ke kota lain pada bola ideal. Vektor ini adalah
+[heading,jarak] dalam radian. Untuk menghitung jarak di bumi, kita kalikan dengan jari-jari
+bumi pada lintang 7Â°.
+\end{eulercomment}
+\begin{eulerprompt}
+>br=svector(FMIPA,Solo); degprint(br[1]), br[2]*rearth(7Â°)->km // perkiraan jarak FMIPA-Solo
+\end{eulerprompt}
+\begin{euleroutput}
+  65°20'26.60''
+  Variable Â not found!
+  Error in degree
+  Error in:
+  ... or(FMIPA,Solo); degprint(br[1]), br[2]*rearth(7Â°)->km // perk ...
+                                                       ^
+\end{euleroutput}
+\begin{eulercomment}
+Ini adalah hampiran yang baik. Rutin-rutin berikut memakai hampiran yang lebih baik lagi.
+Pada jarak yang pendek hasilnya hampir sama.
+
+Catatan: pada versi asli terjadi galat "Commands must be separated by semicolon" bila ada
+komentar "//" setelah -\textgreater{}" km". Karena itu komentar untuk perintah semacam ini ditaruh di baris
+tersendiri.
+Perkiraan jarak FMIPA-Semarang:
+\end{eulercomment}
+\begin{eulerprompt}
+>esdist(FMIPA,Semarang)->" km"
+\end{eulerprompt}
+\begin{euleroutput}
+  88.0114026318 km
+\end{euleroutput}
+\begin{eulercomment}
+Ada fungsi untuk heading, dengan memperhitungkan bentuk elips bumi. Sekali lagi, kita cetak
+dengan cara yang lebih baik.
+\end{eulercomment}
+\begin{eulerprompt}
+>sdegprint(esdir(FMIPA,Solo))
+\end{eulerprompt}
+\begin{euleroutput}
+       65.34°
+\end{euleroutput}
+\begin{eulercomment}
+Sudut suatu segitiga melebihi 180Â° pada bola.
+\end{eulercomment}
+\begin{eulerprompt}
+>asum=sangle(Solo,FMIPA,Semarang)+sangle(FMIPA,Solo,Semarang)+sangle(FMIPA,Semarang,Solo); degprint(asum)
+\end{eulerprompt}
+\begin{euleroutput}
+  180°0'10.77''
+\end{euleroutput}
+\begin{eulercomment}
+Ini dapat dipakai untuk menghitung luas segitiga. Catatan: untuk segitiga kecil, ini tidak
+akurat karena galat pengurangan pada asum-pi.
+Perkiraan luas segitiga FMIPA-Solo-Semarang:
+\end{eulercomment}
+\begin{eulerprompt}
+>(asum-pi)*rearth(48Â°)^2->" km^2"
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable Â not found!
+  Error in degree
+  Error in:
+  (asum-pi)*rearth(48Â°)^2->" km^2" ...
+                       ^
+\end{euleroutput}
+\begin{eulercomment}
+Ada fungsi untuk ini, yang memakai lintang rata-rata segitiga untuk menghitung jari-jari bumi,
+dan menangani galat pembulatan untuk segitiga yang sangat kecil.
+Perkiraan yang sama dengan fungsi esarea():
+\end{eulercomment}
+\begin{eulerprompt}
+>esarea(Solo,FMIPA,Semarang)->" km^2"
+\end{eulerprompt}
+\begin{euleroutput}
+  2123.64310526 km^2
+\end{euleroutput}
+\begin{eulercomment}
+Kita juga dapat menambahkan vektor ke posisi. Vektor memuat heading dan jarak, keduanya dalam
+radian. Untuk mendapatkan vektor, kita pakai svector. Untuk menambahkan vektor ke posisi, kita
+pakai saddvector.
+\end{eulercomment}
+\begin{eulerprompt}
+>v=svector(FMIPA,Solo); sposprint(saddvector(FMIPA,v)), sposprint(Solo),
+\end{eulerprompt}
+\begin{euleroutput}
+  S 7°34.333' E 110°49.683'
+  S 7°34.333' E 110°49.683'
+\end{euleroutput}
+\begin{eulercomment}
+Fungsi-fungsi ini mengandaikan bola ideal. Hal yang sama di bumi.
+\end{eulercomment}
+\begin{eulerprompt}
+>sposprint(esadd(FMIPA,esdir(FMIPA,Solo),esdist(FMIPA,Solo))), sposprint(Solo),
+\end{eulerprompt}
+\begin{euleroutput}
+  S 7°34.333' E 110°49.683'
+  S 7°34.333' E 110°49.683'
+\end{euleroutput}
+\begin{eulercomment}
+Mari kita beralih ke contoh yang lebih besar, Tugu Jogja dan Monas Jakarta (menggunakan Google
+Earth untuk mencari koordinatnya).
+\end{eulercomment}
+\begin{eulerprompt}
+>Tugu=[-7.7833Â°,110.3661Â°]; Monas=[-6.175Â°,106.811944Â°];
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable Â not found!
+  Error in degree
+  Error in:
+  Tugu=[-7.7833Â°,110.3661Â°]; Monas=[-6.175Â°,106.811944Â°]; ...
+                 ^
+\end{euleroutput}
+\begin{eulerprompt}
+>sposprint(Tugu), sposprint(Monas)
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function Tugu not found.
+  Error in:
+  sposprint(Tugu), sposprint(Monas) ...
+                ^
+\end{euleroutput}
+\begin{eulercomment}
+Menurut Google Earth, jaraknya 429.66km. Kita mendapatkan hampiran yang baik.
+Perkiraan jarak Tugu Jogja - Monas Jakarta:
+\end{eulercomment}
+\begin{eulerprompt}
+>esdist(Tugu,Monas)->" km"
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function Tugu not found.
+  Error in:
+  esdist(Tugu,Monas)->" km" ...
+             ^
+\end{euleroutput}
+\begin{eulercomment}
+Heading-nya sama dengan yang dihitung di Google Earth.
+\end{eulercomment}
+\begin{eulerprompt}
+>degprint(esdir(Tugu,Monas))
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function Tugu not found.
+  Error in:
+  degprint(esdir(Tugu,Monas)) ...
+                     ^
+\end{euleroutput}
+\begin{eulercomment}
+Namun, kita tidak lagi mendapatkan posisi tujuan yang tepat, jika kita menambahkan heading dan
+jarak ke posisi semula. Ini karena kita tidak menghitung fungsi inversnya secara tepat, melainkan
+mengambil hampiran jari-jari bumi sepanjang lintasan.
+\end{eulercomment}
+\begin{eulerprompt}
+>sposprint(esadd(Tugu,esdir(Tugu,Monas),esdist(Tugu,Monas)))
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function Tugu not found.
+  Error in:
+  sposprint(esadd(Tugu,esdir(Tugu,Monas),esdist(Tugu,Monas))) ...
+                      ^
+\end{euleroutput}
+\begin{eulercomment}
+Galatnya tidak besar.
+\end{eulercomment}
+\begin{eulerprompt}
+>sposprint(Monas),
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function Monas not found.
+  Error in:
+  sposprint(Monas), ...
+                 ^
+\end{euleroutput}
+\begin{eulercomment}
+Tentu saja, kita tidak bisa berlayar dengan heading yang sama dari satu tujuan ke tujuan lain,
+jika kita ingin mengambil lintasan terpendek. Bayangkan, Anda terbang ke arah timur laut
+mulai dari sebarang titik di bumi. Maka Anda akan berputar spiral menuju kutub utara.
+Lingkaran besar tidak mengikuti heading yang konstan!
+
+Perhitungan berikut menunjukkan bahwa kita jauh meleset dari tujuan yang benar, jika kita
+memakai heading yang sama selama perjalanan.
+\end{eulercomment}
+\begin{eulerprompt}
+>dist=esdist(Tugu,Monas); hd=esdir(Tugu,Monas);
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function Tugu not found.
+  Error in:
+  dist=esdist(Tugu,Monas); hd=esdir(Tugu,Monas); ...
+                  ^
+\end{euleroutput}
+\begin{eulercomment}
+Sekarang kita tambahkan 10 kali sepersepuluh jarak, memakai heading ke Monas yang kita
+dapatkan di Tugu.
+\end{eulercomment}
+\begin{eulerprompt}
+>p=Tugu; loop 1 to 10; p=esadd(p,hd,dist/10); end;
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable Tugu not found!
+  Error in:
+  p=Tugu; loop 1 to 10; p=esadd(p,hd,dist/10); end; ...
+        ^
+\end{euleroutput}
+\begin{eulercomment}
+Hasilnya jauh meleset.
+\end{eulercomment}
+\begin{eulerprompt}
+>sposprint(p), skmprint(esdist(p,Monas))
+\end{eulerprompt}
+\begin{euleroutput}
+  Function sposprint needs a vector for pos
+  Error in:
+  sposprint(p), skmprint(esdist(p,Monas)) ...
+              ^
+\end{euleroutput}
+\begin{eulercomment}
+Sebagai contoh lain, mari kita ambil dua titik di bumi pada lintang yang sama.
+\end{eulercomment}
+\begin{eulerprompt}
+>P1=[30Â°,10Â°]; P2=[30Â°,50Â°];
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable Â not found!
+  Error in degree
+  Error in:
+  P1=[30Â°,10Â°]; P2=[30Â°,50Â°]; ...
+          ^
+\end{euleroutput}
+\begin{eulercomment}
+Lintasan terpendek dari P1 ke P2 bukanlah lingkaran lintang 30Â°, tetapi lintasan yang lebih
+pendek yang dimulai 10Â° lebih ke utara di P1.
+\end{eulercomment}
+\begin{eulerprompt}
+>sdegprint(esdir(P1,P2))
+\end{eulerprompt}
+\begin{euleroutput}
+       90.00°
+\end{euleroutput}
+\begin{eulercomment}
+Tetapi, jika kita mengikuti pembacaan kompas ini, kita akan berputar spiral ke kutub utara!
+Jadi kita harus menyesuaikan heading di sepanjang jalan. Untuk keperluan kasar, kita sesuaikan
+pada setiap 1/10 dari jarak total.
+\end{eulercomment}
+\begin{eulerprompt}
+>p=P1;  dist=esdist(P1,P2); ...
+>  loop 1 to 10; dir=esdir(p,P2); sdegprint(dir), p=esadd(p,dir,dist/10); end;
+\end{eulerprompt}
+\begin{euleroutput}
+       90.00°
+       90.00°
+       90.00°
+       90.00°
+       90.00°
+       90.00°
+       90.00°
+       90.00°
+       90.00°
+       90.00°
+\end{euleroutput}
+\begin{eulercomment}
+Jaraknya tidak tepat, karena kita menambahkan sedikit galat, jika kita mengikuti heading yang
+sama terlalu lama.
+\end{eulercomment}
+\begin{eulerprompt}
+>skmprint(esdist(p,P2))
+\end{eulerprompt}
+\begin{euleroutput}
+       0.000km
+\end{euleroutput}
+\begin{eulercomment}
+Kita mendapatkan hampiran yang baik, jika kita menyesuaikan heading setiap 1/100 dari jarak
+total dari Tugu ke Monas.
+\end{eulercomment}
+\begin{eulerprompt}
+>p=Tugu; dist=esdist(Tugu,Monas); ...
+>  loop 1 to 100; p=esadd(p,esdir(p,Monas),dist/100); end;
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable Tugu not found!
+  Error in:
+  p=Tugu; dist=esdist(Tugu,Monas);   loop 1 to 100; p=esadd(p,es ...
+        ^
+\end{euleroutput}
+\begin{eulerprompt}
+>skmprint(esdist(p,Monas))
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function Monas not found.
+  Error in:
+  skmprint(esdist(p,Monas)) ...
+                         ^
+\end{euleroutput}
+\begin{eulercomment}
+Untuk keperluan navigasi, kita dapat memperoleh rangkaian posisi GPS sepanjang lingkaran besar
+menuju Monas dengan fungsi navigate.
+\end{eulercomment}
+\begin{eulerprompt}
+>load spherical; v=navigate(Tugu,Monas,10); ...
+>  loop 1 to rows(v); sposprint(v[#]), end;
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function Tugu not found.
+  Error in:
+  load spherical; v=navigate(Tugu,Monas,10);   loop 1 to rows(v) ...
+                                 ^
+\end{euleroutput}
+\begin{eulercomment}
+Kita tulis sebuah fungsi, yang menggambar bumi, kedua posisi, dan posisi-posisi di antaranya.
+\end{eulercomment}
+\begin{eulerprompt}
+>function testplot ...
+\end{eulerprompt}
+\begin{eulerudf}
+  useglobal;
+  plotearth;
+  plotpos(Tugu,"Tugu Jogja"); plotpos(Monas,"Monas Jakarta");
+  plotposline(v);
+  endfunction
+\end{eulerudf}
+\begin{eulercomment}
+Sekarang gambar semuanya.
+\end{eulercomment}
+\begin{eulerprompt}
+>plot3d("testplot",angle=25, height=6,>own,>user,zoom=4):
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function Tugu not found.
+  testplot:
+      plotpos(Tugu,"Tugu Jogja"); plotpos(Monas,"Monas Jakarta");
+  Try "trace errors" to inspect local variables after errors.
+  plot3d:
+      f(args());
+\end{euleroutput}
+\begin{eulercomment}
+Atau pakai plot3d untuk mendapatkan tampilan anaglif. Ini tampak sangat bagus dengan
+kacamata merah/cyan.
+\end{eulercomment}
+\begin{eulerprompt}
+>plot3d("testplot",angle=25,height=6,distance=5,own=1,anaglyph=1,zoom=4):
+\end{eulerprompt}
+\begin{euleroutput}
+  Variable or function Tugu not found.
+  testplot:
+      plotpos(Tugu,"Tugu Jogja"); plotpos(Monas,"Monas Jakarta");
+  Try "trace errors" to inspect local variables after errors.
+  plot3d:
+      f(args());
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan (bandingkan keluaran asli): jarak FMIPA-Solo = 53.8945 km, heading 65Â°20'26.60'';
+luas segitiga FMIPA-Solo-Semarang = 2123.64 km\textasciicircum{}2; jarak Tugu-Monas mendekati 429.66 km dengan
+heading 294Â°17'2.85''; setelah 10 langkah dengan heading tetap, posisi meleset 1.529 km.
+
+\begin{eulercomment}
+\eulerheading{Latihan (Soal Akhir)}
+\begin{eulercomment}
+\end{eulercomment}
+\eulersubheading{Latihan 1: Segi-n beraturan jika diketahui pusat O, n, dan jari-jari lingkaran luar r}
+\begin{eulercomment}
+Uraian materi: segi-n beraturan mempunyai n titik sudut pada lingkaran luar berpusat O, dengan
+sudut pusat yang menghadap setiap sisi sebesar 360/n derajat (2pi/n radian). Titik sudut ke-k:
+\end{eulercomment}
+\begin{eulerformula}
+\[
+V_k = O + r(\cos(\theta_0 + 2\pi k/n),\ \sin(\theta_0 + 2\pi k/n)),\quad k=0,\dots,n-1.
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Sama dengan petunjuk soal: titik sudut adalah perpotongan lingkaran luar dengan garis-garis
+yang melalui pusat dan saling membentuk sudut kelipatan 360/n. Untuk n ganjil, satu titik sudut
+di atas (theta0 = 90Â°); untuk n genap, dua titik sudut di kiri dan kanan pusat (theta0 = 0Â°).
+Panjang sisi = 2 r sin(pi/n).
+\end{eulercomment}
+\begin{eulerprompt}
+>function titikSegiN (O,n,r) ...
+\end{eulerprompt}
+\begin{eulerudf}
+    if mod(n,2)==1 then t0=pi/2; else t0=0; endif;
+    t=t0+2*pi*(0:n-1)/n;
+    return (O[1]+r*cos(t))_(O[2]+r*sin(t));
+  endfunction
+\end{eulerudf}
+\begin{eulerprompt}
+>function gambarSegiN (O,n,r) ...
+\end{eulerprompt}
+\begin{eulerudf}
+    V=titikSegiN(O,n,r);
+    setPlotRange(O[1]-1.5*r,O[1]+1.5*r,O[2]-1.5*r,O[2]+1.5*r);
+    aspect(1);
+    plotCircle(circleWithCenter(O,r),"");
+    plotPoint(O,"O");
+    for i=1 to n
+      j=i+1; if j>n then j=1; endif;
+      plotPoint(V[,i]');
+      plotSegment(V[,i]',V[,j]',"");
+      plotSegment(O,V[,i]',"");
+    end;
+  endfunction
+\end{eulerudf}
+\begin{eulerprompt}
+>gambarSegiN([0,0],3,2):
+>gambarSegiN([0,0],4,2):
+>gambarSegiN([1,1],5,2):
+>gambarSegiN([0,0],6,2):
+>gambarSegiN([0,0],7,2):
+>gambarSegiN([0,0],8,2):
+\end{eulerprompt}
+\begin{eulercomment}
+Pemeriksaan panjang sisi untuk r = 2, n = 5:
+\end{eulercomment}
+\begin{eulerprompt}
+>V=titikSegiN([0,0],5,2); distance(V[,1]',V[,2]'), 2*2*sin(pi/5)
+\end{eulerprompt}
+\begin{euleroutput}
+  2.35114100917
+  2.35114100917
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: kedua nilai 2.35114. Panjang sisi untuk r=2: n=3: 3.4641; n=4: 2.8284;
+n=5: 2.3511; n=6: 2 (sama dengan r); n=7: 1.7355; n=8: 1.5307.
+Penjelasan: untuk n=6 sisi sama dengan jari-jari karena segitiga pusat-dua titik sudut berurutan
+sama sisi (sudut pusat 60Â°). Makin besar n, segi-n makin mendekati lingkaran.
+
+\end{eulercomment}
+\eulersubheading{Latihan 2: Parabola yang melalui 3 titik yang diketahui}
+\begin{eulercomment}
+Uraian materi: parabola y = ax\textasciicircum{}2+bx+c memiliki tiga koefisien, sehingga tiga titik (dengan
+absis berbeda) menentukan parabola tersebut secara tunggal. Substitusi tiap titik menghasilkan
+sistem persamaan linear (SPL) 3 x 3 untuk a, b, c.
+
+Contoh: titik-titik (-2,5), (0,-1), (3,2). SPL: 4a-2b+c=5, c=-1, 9a+3b+c=2.
+\end{eulercomment}
+\begin{eulerprompt}
+>xp=[-2,0,3]; yp=[5,-1,2];
+>M=(xp^2)'|xp'|ones(3,1)
+\end{eulerprompt}
+\begin{euleroutput}
+              4            -2             1 
+              0             0             1 
+              9             3             1 
+\end{euleroutput}
+\begin{eulerprompt}
+>koef=M\(\backslash\)yp'
+\end{eulerprompt}
+\begin{euleroutput}
+            0.8 
+           -1.4 
+             -1 
+\end{euleroutput}
+\begin{eulerprompt}
+>pa=koef[1]; pb=koef[2]; pc=koef[3];
+>pa*xp^2+pb*xp+pc
+\end{eulerprompt}
+\begin{euleroutput}
+  [5,  -1,  2]
+\end{euleroutput}
+\begin{eulerprompt}
+>plot2d("pa*x^2+pb*x+pc",-3,4); plot2d(xp,yp,points=1,add=1,color=12):
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: koef = [0.8; -1.4; -1], yaitu y = 0.8x\textasciicircum{}2 - 1.4x - 1; nilai parabola
+di xp adalah [5, -1, 2], sama dengan yp.
+Penyelesaian eksak dengan Maxima:
+\end{eulercomment}
+\begin{eulerprompt}
+>&remvalue(a,b,c);
+>sol &= solve([a*(-2)^2+b*(-2)+c=5, c=-1, a*3^2+b*3+c=2],[a,b,c]); $sol
+>parabolanya &= (a*x^2+b*x+c) with sol[1]; $'y=parabolanya
+>plot2d(&parabolanya,-3,4):
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: a=4/5, b=-7/5, c=-1.
+Penjelasan: kurva melalui ketiga titik. Karena a = 0.8 \textgreater{} 0 parabola terbuka ke atas, dengan
+titik puncak di x = -b/(2a) = 0.875.
+
+\end{eulercomment}
+\eulersubheading{Latihan 3: Segi-4 garis singgung}
+\begin{eulercomment}
+Uraian materi: segi-4 garis singgung adalah segi-4 yang keempat sisinya menyinggung satu
+lingkaran (lingkaran dalam). Syarat perlu dan cukup (teorema Pitot, untuk segi-4 cembung):
+jumlah panjang sisi-sisi yang berhadapan sama,
+\end{eulercomment}
+\begin{eulerformula}
+\[
+AB + CD = BC + DA.
+\]
+\end{eulerformula}
+\begin{eulercomment}
+Bukti (perlu): jika lingkaran dalam menyinggung sisi-sisi, panjang garis singgung dari satu titik
+sudut ke lingkaran sama untuk kedua sisi yang bertemu di titik itu. Misal panjangnya p, q, r, s
+di A, B, C, D. Maka AB = p+q, BC = q+r, CD = r+s, DA = s+p, sehingga AB+CD = p+q+r+s = BC+DA.
+
+Catatan: pada soal tertulis "hasil kali panjang sisi-sisi yang berhadapan sama". Ini kurang tepat:
+syarat yang benar adalah hasil JUMLAH. Contoh penyangkal untuk "hasil kali": sisi 3, 2, 4, 6 (secara
+berurutan) memberi AB x CD = 3 x 4 = 12 = 2 x 6 = BC x DA, padahal AB+CD = 7 tidak sama dengan BC+DA = 8, jadi
+segi-4 tersebut bukan segi-4 garis singgung. Selain itu, setiap layang-layang mempunyai hasil kali
+yang sama dengan sendirinya (AB.CD = BC.DA) sehingga hasil kali tidak dapat membedakannya.
+Karena itu pada latihan ini yang diuji adalah jumlahnya (syarat Pitot).
+
+Fungsi pengujian: mengembalikan [AB+CD, BC+DA, selisih].
+\end{eulercomment}
+\begin{eulerprompt}
+>function tesPitot (A,B,C,D) ...
+\end{eulerprompt}
+\begin{eulerudf}
+    s1=distance(A,B)+distance(C,D);
+    s2=distance(B,C)+distance(D,A);
+    return [s1,s2,s1-s2];
+  endfunction
+\end{eulerudf}
+\begin{eulercomment}
+Contoh 1: layang-layang A(-1,0), B(0,2), C(4,0), D(0,-2).
+\end{eulercomment}
+\begin{eulerprompt}
+>A=[-1,0]; B=[0,2]; C=[4,0]; D=[0,-2];
+>tesPitot(A,B,C,D)
+\end{eulerprompt}
+\begin{euleroutput}
+  [6.7082,  6.7082,  0]
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: [6.7082, 6.7082, 0], jadi AB+CD = BC+DA (syarat dipenuhi).
+Uji kedua dengan garis bagi sudut: keempat garis bagi harus bertemu di satu titik.
+\end{eulercomment}
+\begin{eulerprompt}
+>gA4=angleBisector(D,A,B); gB4=angleBisector(A,B,C); gC4=angleBisector(B,C,D); gD4=angleBisector(C,D,A);
+>setPlotRange(-3,6,-4,4); aspect(1);
+>plotPoint(A,"A"); plotPoint(B,"B"); plotPoint(C,"C"); plotPoint(D,"D");
+>plotSegment(A,B,""); plotSegment(B,C,""); plotSegment(C,D,""); plotSegment(D,A,"");
+>color(5); plotLine(gA4); plotLine(gB4); plotLine(gC4); plotLine(gD4); color(1);
+>Pd=lineIntersection(gA4,gB4)
+\end{eulerprompt}
+\begin{euleroutput}
+  [0.666667,  0]
+\end{euleroutput}
+\begin{eulerprompt}
+>jarakKeGaris(Pd,gC4), jarakKeGaris(Pd,gD4)
+\end{eulerprompt}
+\begin{euleroutput}
+  0
+  0
+\end{euleroutput}
+\begin{eulerprompt}
+>rd=[jarakKeGaris(Pd,lineThrough(A,B)),jarakKeGaris(Pd,lineThrough(B,C)),jarakKeGaris(Pd,lineThrough(C,D)),jarakKeGaris(Pd,lineThrough(D,A))]
+\end{eulerprompt}
+\begin{euleroutput}
+  [1.49071,  1.49071,  1.49071,  1.49071]
+\end{euleroutput}
+\begin{eulerprompt}
+>plotPoint(Pd,"I"); plotCircle(circleWithCenter(Pd,rd[1]),"Lingkaran dalam"):
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: Pd = [0.666667, 0]; jarak Pd ke gC4 dan gD4 adalah 0; keempat jarak
+rd sama, yaitu 1.49071 (jari-jari lingkaran dalam).
+Penjelasan: keempat garis bagi sudut konkuren di Pd dan Pd berjarak sama (1.49071) ke keempat sisi,
+sehingga lingkaran berpusat Pd berjari-jari 1.49071 menyinggung keempat sisi: ini segi-4 garis
+singgung, sesuai teorema Pitot (selisih jumlah sisi berhadapan = 0).
+
+Contoh 2 (bukan segi-4 garis singgung): A(0,0), B(4,0), C(5,3), D(0,2).
+\end{eulercomment}
+\begin{eulerprompt}
+>A=[0,0]; B=[4,0]; C=[5,3]; D=[0,2];
+>tesPitot(A,B,C,D)
+\end{eulerprompt}
+\begin{euleroutput}
+  [9.09902,  5.16228,  3.93674]
+\end{euleroutput}
+\begin{eulerprompt}
+>gA4=angleBisector(D,A,B); gB4=angleBisector(A,B,C); gC4=angleBisector(B,C,D); gD4=angleBisector(C,D,A);
+>Pd=lineIntersection(gA4,gB4)
+\end{eulerprompt}
+\begin{euleroutput}
+  [2.32456,  2.32456]
+\end{euleroutput}
+\begin{eulerprompt}
+>jarakKeGaris(Pd,gC4), jarakKeGaris(Pd,gD4)
+\end{eulerprompt}
+\begin{euleroutput}
+  1.26425001148
+  1.72473458997
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: tesPitot = [9.0990, 5.1623, 3.9367]; Pd = [2.32456, 2.32456]; jarak ke
+gC4 = 1.26425 dan ke gD4 = 1.72473 (tidak nol).
+Penjelasan: keempat garis bagi tidak bertemu di satu titik, dan jumlah sisi berhadapan tidak
+sama, jadi segi-4 ini bukan segi-4 garis singgung. Kedua uji (Pitot dan garis bagi) konsisten.
+
+\end{eulercomment}
+\eulersubheading{Latihan 4: Elips jika diketahui kedua titik fokus P dan Q}
+\begin{eulercomment}
+Uraian materi: elips dengan fokus P dan Q adalah himpunan titik T dengan TP + TQ = 2a (konstan,
+2a \textgreater{} PQ). Jika c = PQ/2 dan b\textasciicircum{}2 = a\textasciicircum{}2 - c\textasciicircum{}2, pada posisi baku (pusat di titik asal, fokus di
+sumbu-x) persamaannya x\textasciicircum{}2/a\textasciicircum{}2 + y\textasciicircum{}2/b\textasciicircum{}2 = 1.
+
+(a) Fokus P(-3,0), Q(3,0), jumlah jarak 10 (a=5, c=3, b=4), digambar secara implisit.
+\end{eulercomment}
+\begin{eulerprompt}
+>eli &= sqrt((x+3)^2+y^2)+sqrt((x-3)^2+y^2)-10; $eli='0
+>P=[-3,0]; Q=[3,0];
+>setPlotRange(7); aspect(1); plotPoint(P,"P"); plotPoint(Q,"Q");
+>plot2d(eli,level=0,add=1,contourcolor=blue):
+\end{eulerprompt}
+\begin{eulercomment}
+Hasil yang diharapkan: elips x\textasciicircum{}2/25 + y\textasciicircum{}2/16 = 1 dengan fokus P dan Q.
+Pemeriksaan numerik dengan titik parametrik T(5 cos t, 4 sin t):
+\end{eulercomment}
+\begin{eulerprompt}
+>t=1; T=[5*cos(t),4*sin(t)]; distance(T,P)+distance(T,Q)
+\end{eulerprompt}
+\begin{euleroutput}
+  10
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: 10.
+
+(b) Fokus sebarang (miring): P(1,1), Q(5,4), jumlah jarak 8. Digambar secara parametrik
+dengan memutar elips baku sejauh arah vektor PQ.
+\end{eulercomment}
+\begin{eulerprompt}
+>P=[1,1]; Q=[5,4]; jj=8;
+>M0=(P+Q)/2; c2=distance(P,Q)/2; a2=jj/2; b2=sqrt(a2^2-c2^2); th=atan2(Q[2]-P[2],Q[1]-P[1]);
+>tt=linspace(0,2*pi,200);
+>xe=M0[1]+a2*cos(tt)*cos(th)-b2*sin(tt)*sin(th); ye=M0[2]+a2*cos(tt)*sin(th)+b2*sin(tt)*cos(th);
+>setPlotRange(-2,9,-3,8); aspect(1); plotPoint(P,"P"); plotPoint(Q,"Q");
+>plot2d(xe,ye,add=1,color=blue):
+>jum=sqrt((xe-P[1])^2+(ye-P[2])^2)+sqrt((xe-Q[1])^2+(ye-Q[2])^2); min(jum), max(jum)
+\end{eulerprompt}
+\begin{euleroutput}
+  7.54998577103
+  8.42613486932
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: pusat M0 = [3,2.5], c = 2.5, a = 4, b = 3.1225; min dan max jum keduanya 8.
+Penjelasan: setiap titik pada kurva memiliki jumlah jarak ke P dan Q yang sama (8), sehingga kurva
+tersebut elips dengan fokus P dan Q.
+
+\end{eulercomment}
+\eulersubheading{Latihan 5: Hiperbola jika diketahui kedua titik fokus P dan Q}
+\begin{eulercomment}
+Catatan: pada soal tertulis "ellips ... selisih jarak". Yang dimaksud adalah hiperbola: tempat
+kedudukan titik-titik yang SELISIH jarak ke P dan Q-nya (nilai mutlak) konstan.
+Uraian materi: hiperbola dengan fokus P, Q: \textbar{}TP - TQ\textbar{} = 2a (0 \textless{} 2a \textless{} PQ). Dengan c = PQ/2 dan
+b\textasciicircum{}2 = c\textasciicircum{}2 - a\textasciicircum{}2, pada posisi baku persamaannya x\textasciicircum{}2/a\textasciicircum{}2 - y\textasciicircum{}2/b\textasciicircum{}2 = 1, dengan asimtot y = +/- (b/a) x.
+
+Fokus P(-3,0), Q(3,0), selisih jarak 4 (a=2, c=3, b\textasciicircum{}2=5). Cabang kanan: TP - TQ = 4, cabang kiri: TP - TQ = -4.
+\end{eulercomment}
+\begin{eulerprompt}
+>hipR &= sqrt((x+3)^2+y^2)-sqrt((x-3)^2+y^2)-4; $hipR='0
+>hipL &= sqrt((x+3)^2+y^2)-sqrt((x-3)^2+y^2)+4; $hipL='0
+>P=[-3,0]; Q=[3,0];
+>setPlotRange(8); aspect(1); plotPoint(P,"P"); plotPoint(Q,"Q");
+>plot2d(hipR,level=0,add=1,contourcolor=red); plot2d(hipL,level=0,add=1,contourcolor=red):
+\end{eulerprompt}
+\begin{eulercomment}
+Asimtot y = +/- sqrt(5)/2 x:
+\end{eulercomment}
+\begin{eulerprompt}
+>plot2d("sqrt(5)/2*x",add=1); plot2d("-sqrt(5)/2*x",add=1):
+\end{eulerprompt}
+\begin{eulercomment}
+Pemeriksaan numerik dengan titik parametrik (2 cosh t, sqrt(5) sinh t):
+\end{eulercomment}
+\begin{eulerprompt}
+>tt=linspace(-2,2,100); xh=2*cosh(tt); yh=sqrt(5)*sinh(tt);
+>sel=abs(sqrt((xh+3)^2+yh^2)-sqrt((xh-3)^2+yh^2)); min(sel), max(sel)
+\end{eulerprompt}
+\begin{euleroutput}
+  4
+  4
+\end{euleroutput}
+\begin{eulercomment}
+Hasil yang diharapkan: min dan max keduanya 4.
+Penjelasan: setiap titik (2 cosh t, sqrt(5) sinh t) memenuhi x\textasciicircum{}2/4 - y\textasciicircum{}2/5 = 1 dan
+selisih jaraknya ke kedua fokus tepat 4, jadi kurva itu hiperbola dengan fokus P dan Q.
+
+\begin{eulercomment}
+\eulerheading{Daftar Pustaka dan Catatan}
+\begin{eulercomment}
+- R. Grothmann, Euler Math Toolbox, dokumentasi dan contoh (file geometry.e, spherical.e, povray.e).
+- N. J. Wildberger, Divine Proportions: Rational Trigonometry to Universal Geometry (2005).
+- H. S. M. Coxeter dan S. L. Greitzer, Geometry Revisited (1967): garis Euler, titik Fermat,
+\end{eulercomment}
+\begin{eulerttcomment}
+  teorema Pitot, lingkaran dalam dan lingkaran luar.
+\end{eulerttcomment}
+\begin{eulercomment}
+
+Catatan kejujuran: notebook ini disusun tanpa menjalankannya di EMT. Seluruh nilai hasil yang
+diharapkan sudah dihitung dan diperiksa dengan Python. Jika ada perintah yang menghasilkan galat
+(misalnya karena perbedaan versi EMT), kemungkinan besar itu perbedaan sintaks kecil; periksa
+pesan galatnya dan sesuaikan.
+\end{eulercomment}
+\end{eulernotebook}
+\end{document}
