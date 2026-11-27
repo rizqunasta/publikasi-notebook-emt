@@ -22,7 +22,7 @@ Berikut daftar dokumen PDF:
 - [3. Menggambar Grafik 2D dengan EMT](<PDF/3.%20Menggambar%20Grafik%202D%20dengan%20EMT.pdf>)
 - [4. Menggambar Plot 3D dengan EMT](<PDF/4.%20Menggambar%20Plot%203D%20dengan%20EMT.pdf>)
 - [5. Kalkulus dengan EMT](<PDF/5.%20Kalkulus%20dengan%20EMT.pdf>)
-- [6. Visualisasi dan Perhitungan Geometri dengan EMT](PDF/6.%20Visualisasi%20dan%20Perhitungan%20Geometri%20dengan%20EMT.pdf))
+- [6. Visualisasi dan Perhitungan Geometri dengan EMT](PDF/6.%20Visualisasi%20dan%20Perhitungan%20Geometri%20dengan%20EMT.pdf)
 
 ## Perangkat Lunak
 
